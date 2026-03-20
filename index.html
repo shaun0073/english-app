@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Speaking Practice</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <!-- Use Inter font for a modern, sleek look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Landing / Introduction Screen -->
+        <div id="intro-screen" class="screen active fade-in">
+            <h1 class="gradient-text">Speak with Confidence</h1>
+            <p class="subtitle">Personalize your AI English speaking practice journey.</p>
+            <button id="start-btn" class="primary-btn pulse-glow">開始制定我的學習計劃</button>
+        </div>
+
+        <!-- Questionnaire Screen -->
+        <div id="questionnaire-screen" class="screen hidden">
+            <!-- Progress Indicator -->
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            <div class="question-container">
+                <!-- Step 1: Occupation -->
+                <div id="step-1" class="step active fade-in">
+                    <h2>你的職業是？</h2>
+                    <p class="subtitle">這將幫助我們為您推薦最適合的對話難度與詞彙。</p>
+                    <div class="options-grid" data-step="1">
+                        <div class="option-card" data-value="engineer">
+                            <span class="icon">💻</span>
+                            <span class="label">工程師</span>
+                        </div>
+                        <div class="option-card" data-value="sales">
+                            <span class="icon">🤝</span>
+                            <span class="label">銷售</span>
+                        </div>
+                        <div class="option-card" data-value="housewife">
+                            <span class="icon">🏠</span>
+                            <span class="label">全職媽媽</span>
+                        </div>
+                        <div class="option-card" data-value="student">
+                            <span class="icon">🎓</span>
+                            <span class="label">學生</span>
+                        </div>
+                        <div class="option-card" data-value="other">
+                            <span class="icon">✨</span>
+                            <span class="label">其他</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Level -->
+                <div id="step-2" class="step hidden">
+                    <h2>你的英語程度是？</h2>
+                    <p class="subtitle">選擇您的起點，讓我們調整發音辨識與對話速度。</p>
+                    <div class="options-grid" data-step="2">
+                        <div class="option-card" data-value="beginner">
+                            <span class="icon">🌱</span>
+                            <span class="label">初學者 (Beginner)</span>
+                        </div>
+                        <div class="option-card" data-value="intermediate">
+                            <span class="icon">🌿</span>
+                            <span class="label">中級 (Intermediate)</span>
+                        </div>
+                        <div class="option-card" data-value="advanced">
+                            <span class="icon">🌳</span>
+                            <span class="label">進階 (Advanced)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Scenario -->
+                <div id="step-3" class="step hidden">
+                    <h2>你想練習的場景是？</h2>
+                    <p class="subtitle">最後一步，選擇您最想精進的生活與工作情境。</p>
+                    <div class="options-grid" data-step="3">
+                        <div class="option-card" data-value="daily_office">
+                            <span class="icon">🏢</span>
+                            <span class="label">日常辦公</span>
+                        </div>
+                        <div class="option-card" data-value="business_meeting">
+                            <span class="icon">📊</span>
+                            <span class="label">商務會議</span>
+                        </div>
+                        <div class="option-card" data-value="travel">
+                            <span class="icon">✈️</span>
+                            <span class="label">出國旅行</span>
+                        </div>
+                        <div class="option-card" data-value="exam">
+                            <span class="icon">📝</span>
+                            <span class="label">考試備考</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="navigation-buttons">
+                <button id="prev-btn" class="secondary-btn hidden">上一步</button>
+                <button id="next-btn" class="primary-btn hidden">下一步</button>
+                <button id="finish-btn" class="primary-btn pulse-glow hidden">完成</button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen hidden">
+            <h2 class="gradient-text">為您量身打造的學習計畫<br>已準備就緒！</h2>
+            <div class="result-summary" id="result-summary">
+                <!-- Data inserted by script.js -->
+            </div>
+            <button id="start-learning-btn" class="primary-btn pulse-glow">進入學習頁面</button>
+        </div>
+
+        <!-- Learning Interface Screen -->
+        <div id="learning-screen" class="screen hidden">
+            <h2 id="learning-title" class="gradient-text">學習介面</h2>
+            <p class="subtitle" id="learning-subtitle">開始您的專屬口語練習</p>
+            
+            <div class="chat-container">
+                <div class="chat-message ai-message">
+                    <div class="avatar">AI</div>
+                    <div class="message-content" id="ai-greeting">
+                        Hello! Let's start speaking.
+                    </div>
+                </div>
+                <!-- User message placeholder will go here dynamically -->
+            </div>
+
+            <div class="recording-controls">
+                <button id="mic-btn" class="mic-button pulse-glow">
+                    <span class="icon">🎙️</span>
+                </button>
+                <p class="status-text text-muted" style="margin-top: 1rem;">點擊麥克風開始說話</p>
+            </div>
+            
+            <div class="navigation-buttons" style="margin-top: 2.5rem;">
+                <button id="restart-btn" class="secondary-btn">重新設定目標</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
