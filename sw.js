@@ -1,4 +1,4 @@
-const CACHE_NAME = 'english-speaking-app-v1';
+const CACHE_NAME = 'english-speaking-app-v2';
 const urlsToCache = [
   './',
   './index.html',
@@ -27,5 +27,21 @@ self.addEventListener('fetch', event => {
         }
         return fetch(event.request);
       })
+  );
+});
+
+// Clear old caches when a new service worker is activated
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => {
+          if (cache !== CACHE_NAME) {
+             console.log('Service Worker: Clearing old cache');
+            return caches.delete(cache);
+          }
+        })
+      );
+    })
   );
 });
