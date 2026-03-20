@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
             3: null  // practice scenario
         },
         currentStep: 1,
-        totalSteps: 3
+        totalSteps: 3,
+        aiPersona: { avatar: 'avatar.svg', voiceURI: null }
     };
 
     // Load saved API Key
@@ -186,6 +187,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startLearningInterface() {
+        // Randomize AI Persona
+        const isMale = Math.random() < 0.5;
+        state.aiPersona.avatar = isMale ? 'avatar_m.svg' : 'avatar_f.svg';
+        state.aiPersona.voiceURI = null; // Will pick a new voice randomly later
+
         // Hide summary result screen
         resultScreen.classList.remove('active');
         resultScreen.classList.add('hidden');
@@ -250,6 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
         aiGreeting.innerHTML = initialAiMessage;
         
+        const firstAvatar = document.querySelector('.chat-message.ai-message .avatar img');
+        if (firstAvatar) firstAvatar.src = state.aiPersona.avatar;
+        
         // Speak initial greeting after a short delay to ensure UI is ready
         setTimeout(() => speakText(initialAiMessage), 300);
     }
@@ -267,9 +276,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const voices = window.speechSynthesis.getVoices();
         const enVoices = voices.filter(v => v.lang.startsWith('en'));
         if (enVoices.length > 0) {
-            // prefer a female or natural sounding one if identifiable, else just take the first english one
-            const preferred = enVoices.find(v => v.name.includes('Google') || v.name.includes('Natural')) || enVoices[0];
-            utterance.voice = preferred;
+            if (!state.aiPersona.voiceURI) {
+                // Randomly pick an English voice (this will occasionally include British, Australian, Indian, etc. if installed)
+                const randomVoice = enVoices[Math.floor(Math.random() * enVoices.length)];
+                state.aiPersona.voiceURI = randomVoice.voiceURI;
+            }
+            
+            const selectedVoice = enVoices.find(v => v.voiceURI === state.aiPersona.voiceURI) || enVoices[0];
+            utterance.voice = selectedVoice;
+            
+            // Adjust pitch slightly based on avatar gender heuristically if we want, but voice itself usually dictates it
         }
 
         utterance.lang = 'en-US';
@@ -454,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let avatarHTML = '';
         if (sender === 'ai') {
-            avatarHTML = `<div class="avatar"><img src="avatar.svg" alt="AI"></div>`;
+            avatarHTML = `<div class="avatar"><img src="${state.aiPersona.avatar}" alt="AI"></div>`;
         } else {
             avatarHTML = `<div class="avatar">You</div>`;
         }

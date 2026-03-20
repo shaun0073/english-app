@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+    <defs>
+        <linearGradient id="mGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3b82f6" />
+            <stop offset="100%" stop-color="#1e40af" />
+        </linearGradient>
+    </defs>
+    <circle cx="60" cy="60" r="60" fill="url(#mGrad)" />
+    <!-- Hair/Top -->
+    <path d="M 30 40 Q 60 20 90 40 L 95 60 L 25 60 Z" fill="#1e3a8a" />
+    <circle cx="60" cy="60" r="35" fill="#e0f2fe" />
+    <!-- Eyes -->
+    <circle cx="45" cy="55" r="5" fill="#1e40af" />
+    <circle cx="75" cy="55" r="5" fill="#1e40af" />
+    <!-- Mouth -->
+    <path d="M 50 75 Q 60 85 70 75" fill="none" stroke="#1e40af" stroke-width="4" stroke-linecap="round" />
+</svg>
