@@ -187,10 +187,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startLearningInterface() {
-        // Randomize AI Persona
-        const isMale = Math.random() < 0.5;
-        state.aiPersona.avatar = isMale ? 'avatar_m.svg' : 'avatar_f.svg';
-        state.aiPersona.voiceURI = null; // Will pick a new voice randomly later
+        // Fix to Young Female Persona
+        state.aiPersona.avatar = 'avatar_f.svg';
+        state.aiPersona.voiceURI = null; // Will pick a new female voice randomly later
 
         // Hide summary result screen
         resultScreen.classList.remove('active');
@@ -277,20 +276,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const enVoices = voices.filter(v => v.lang.startsWith('en'));
         if (enVoices.length > 0) {
             if (!state.aiPersona.voiceURI) {
-                // Randomly pick an English voice (this will occasionally include British, Australian, Indian, etc. if installed)
-                const randomVoice = enVoices[Math.floor(Math.random() * enVoices.length)];
+                // Focus on young female voices with accents like US, UK, AU, SG, PH
+                const femaleKeywords = ['female', 'zira', 'hazel', 'samantha', 'victoria', 'karen', 'tessa', 'moira', 'veena', 'natasha', 'fiona', 'siri'];
+                
+                let femaleVoices = enVoices.filter(v => {
+                    const name = v.name.toLowerCase();
+                    if (name.includes('google')) return name.includes('female') || !name.includes('male');
+                    return femaleKeywords.some(kw => name.includes(kw));
+                });
+                
+                if (femaleVoices.length === 0) femaleVoices = enVoices;
+
+                // Randomly pick a female accent
+                const randomVoice = femaleVoices[Math.floor(Math.random() * femaleVoices.length)];
                 state.aiPersona.voiceURI = randomVoice.voiceURI;
             }
             
             const selectedVoice = enVoices.find(v => v.voiceURI === state.aiPersona.voiceURI) || enVoices[0];
             utterance.voice = selectedVoice;
-            
-            // Adjust pitch slightly based on avatar gender heuristically if we want, but voice itself usually dictates it
         }
 
-        utterance.lang = 'en-US';
-        // 稍微調慢語速，讓發音更清楚
-        utterance.rate = 0.85;
+        utterance.rate = 1.0;
         utterance.pitch = 1.0;
 
         // Visual feedback
