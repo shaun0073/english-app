@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Load saved API Key
-    const savedKey = localStorage.getItem('gemini_api_key');
+    const savedKey = localStorage.getItem('groq_api_key');
     if (savedKey) {
         const keyInput = document.getElementById('api-key-input');
         if (keyInput) keyInput.value = savedKey;
@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Handle API Key
         const apiKeyInput = document.getElementById('api-key-input');
         if (apiKeyInput && apiKeyInput.value) {
-            localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
+            localStorage.setItem('groq_api_key', apiKeyInput.value.trim());
         }
         
         // Clear old messages except the first AI greeting
@@ -236,12 +236,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.currentConversationHistory = [
             {
-                role: "user",
-                parts: [{ text: currentSystemPrompt + " Let's begin the roleplay. You go first." }]
+                role: "system",
+                content: currentSystemPrompt
             },
             {
-                role: "model",
-                parts: [{ text: initialAiMessage }]
+                role: "user",
+                content: "Let's begin the roleplay. You go first."
+            },
+            {
+                role: "assistant",
+                content: initialAiMessage
             }
         ];
         aiGreeting.innerHTML = initialAiMessage;
@@ -333,24 +337,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Update UI with actual speech
                     appendMessage('user', userSaid);
                     
-                    const apiKey = localStorage.getItem('gemini_api_key');
+                    const apiKey = localStorage.getItem('groq_api_key');
                     if (apiKey) {
-                        statusText.textContent = "AI 正在思考中...";
+                        statusText.textContent = "AI 正在光速思考中...";
                         
                         window.currentConversationHistory.push({
                             role: "user",
-                            parts: [{ text: userSaid }]
+                            content: userSaid
                         });
 
-                        fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                        fetch(`https://api.groq.com/openai/v1/chat/completions`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${apiKey}`
+                            },
                             body: JSON.stringify({
-                                contents: window.currentConversationHistory,
-                                generationConfig: {
-                                    maxOutputTokens: 150,
-                                    temperature: 0.7
-                                }
+                                model: "llama3-8b-8192",
+                                messages: window.currentConversationHistory,
+                                max_tokens: 150,
+                                temperature: 0.7
                             })
                         })
                         .then(res => res.json())
@@ -360,11 +366,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                 appendMessage('ai', `Error: ${data.error.message}`);
                                 return;
                             }
-                            const aiText = data.candidates[0].content.parts[0].text;
+                            const aiText = data.choices[0].message.content;
                             
                             window.currentConversationHistory.push({
-                                role: "model",
-                                parts: [{ text: aiText }]
+                                role: "assistant",
+                                content: aiText
                             });
                             
                             appendMessage('ai', aiText);
