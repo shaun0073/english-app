@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+    <defs>
+        <linearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8b5cf6" />
+            <stop offset="100%" stop-color="#3b82f6" />
+        </linearGradient>
+    </defs>
+    <circle cx="60" cy="60" r="60" fill="url(#aiGrad)" />
+    <!-- AI Face Lines -->
+    <rect x="35" y="45" width="15" height="15" rx="5" fill="#ffffff" />
+    <rect x="70" y="45" width="15" height="15" rx="5" fill="#ffffff" />
+    <path d="M 45 80 Q 60 95 75 80" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" />
+</svg>

@@ -249,6 +249,55 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         ];
         aiGreeting.innerHTML = initialAiMessage;
+        
+        // Speak initial greeting after a short delay to ensure UI is ready
+        setTimeout(() => speakText(initialAiMessage), 300);
+    }
+    
+    // TTS function
+    function speakText(text) {
+        if (!('speechSynthesis' in window)) return;
+        
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Try to get a nice English voice
+        const voices = window.speechSynthesis.getVoices();
+        const enVoices = voices.filter(v => v.lang.startsWith('en'));
+        if (enVoices.length > 0) {
+            // prefer a female or natural sounding one if identifiable, else just take the first english one
+            const preferred = enVoices.find(v => v.name.includes('Google') || v.name.includes('Natural')) || enVoices[0];
+            utterance.voice = preferred;
+        }
+
+        utterance.lang = 'en-US';
+        // 稍微調慢語速，讓發音更清楚
+        utterance.rate = 0.85;
+        utterance.pitch = 1.0;
+
+        // Visual feedback
+        utterance.onstart = () => {
+            const aiAvatars = document.querySelectorAll('.ai-message .avatar');
+            if (aiAvatars.length > 0) {
+                aiAvatars[aiAvatars.length - 1].classList.add('speaking');
+            }
+        };
+
+        const stopSpeakingAnim = () => {
+            document.querySelectorAll('.avatar.speaking').forEach(el => el.classList.remove('speaking'));
+        };
+
+        utterance.onend = stopSpeakingAnim;
+        utterance.onerror = stopSpeakingAnim;
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // Force load voices to solve Chrome's asynchronous voice loading issue
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     }
 
     let isRecording = false;
@@ -374,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
                             
                             appendMessage('ai', aiText);
+                            speakText(aiText);
                         })
                         .catch(err => {
                             statusText.textContent = "點擊麥克風開始說話";
@@ -386,6 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const scenarioKey = state.answers[3] || 'daily_office';
                             const mockDialog = mockConversations[scenarioKey];
                             appendMessage('ai', mockDialog.ai + " (請在首頁輸入 API Key 以啟用真實 AI)");
+                            speakText(mockDialog.ai);
                         }, 1200);
                     }
                 } else {
@@ -401,10 +452,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const msgDiv = document.createElement('div');
         msgDiv.className = `chat-message ${sender}-message fade-in`;
         
-        const avatarText = sender === 'ai' ? 'AI' : 'You';
+        let avatarHTML = '';
+        if (sender === 'ai') {
+            avatarHTML = `<div class="avatar"><img src="avatar.svg" alt="AI"></div>`;
+        } else {
+            avatarHTML = `<div class="avatar">You</div>`;
+        }
         
         msgDiv.innerHTML = `
-            <div class="avatar">${avatarText}</div>
+            ${avatarHTML}
             <div class="message-content">${text}</div>
         `;
         
@@ -428,6 +484,11 @@ document.addEventListener('DOMContentLoaded', () => {
         introScreen.classList.remove('hidden');
         void introScreen.offsetWidth;
         introScreen.classList.add('active', 'fade-in');
+        
+        // Stop any ongoing speech
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
     }
 });
 
