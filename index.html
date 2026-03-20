@@ -18,7 +18,13 @@
         <div id="intro-screen" class="screen active fade-in">
             <h1 class="gradient-text">Speak with Confidence</h1>
             <p class="subtitle">Personalize your AI English speaking practice journey.</p>
-            <button id="start-btn" class="primary-btn pulse-glow">開始制定我的學習計劃</button>
+            
+            <div class="api-key-container">
+                <input type="password" id="api-key-input" class="settings-input" placeholder="填寫 Gemini API Key (可選，以啟用真實AI)">
+                <p class="api-link" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">若要啟用真實 AI 對話，請輸入您的 <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--primary);">Gemini API Key (免費取得)</a></p>
+            </div>
+            
+            <button id="start-btn" class="primary-btn pulse-glow" style="margin-top: 2rem;">開始制定我的學習計劃</button>
         </div>
 
         <!-- Questionnaire Screen -->
