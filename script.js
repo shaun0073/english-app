@@ -10,6 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
         totalSteps: 3
     };
 
+    // Load saved API Key
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey) {
+        const keyInput = document.getElementById('api-key-input');
+        if (keyInput) keyInput.value = savedKey;
+    }
+
     // Human-readable labels for the final result mapping
     const answerLabels = {
         engineer: "工程師 (Engineer)",
@@ -195,6 +202,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const aiGreeting = document.getElementById('ai-greeting');
         const level = state.answers[2];
         const scenario = state.answers[3];
+        const occupation = state.answers[1];
+        
+        // Handle API Key
+        const apiKeyInput = document.getElementById('api-key-input');
+        if (apiKeyInput && apiKeyInput.value) {
+            localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
+        }
         
         // Clear old messages except the first AI greeting
         const chatContainer = document.querySelector('.chat-container');
@@ -203,19 +217,34 @@ document.addEventListener('DOMContentLoaded', () => {
             if (index > 0) msg.remove();
         });
 
+        let initialAiMessage = "";
         if (scenario === 'business_meeting') {
-            aiGreeting.innerHTML = "Hello! Let's start our business meeting. Are you ready to present your report?";
+            initialAiMessage = "Hello! Let's start our business meeting. Are you ready to present your report?";
         } else if (scenario === 'travel') {
-            aiGreeting.innerHTML = "Welcome! Are you ready to practice checking into a hotel or ordering food at a restaurant?";
+            initialAiMessage = "Welcome! Are you ready to practice checking into a hotel or ordering food at a restaurant?";
         } else if (scenario === 'exam') {
-            aiGreeting.innerHTML = "Good day! Let's practice your speaking exam. Tell me when you are ready to begin.";
+            initialAiMessage = "Good day! Let's practice your speaking exam. Tell me when you are ready to begin.";
         } else {
             if(level === 'beginner') {
-                aiGreeting.innerHTML = "Hi there! Let's have a simple casual conversation. How are you today?";
+                initialAiMessage = "Hi there! Let's have a simple casual conversation. How are you today?";
             } else {
-                aiGreeting.innerHTML = "Hi there! Let's have a conversation to improve your daily office English. What's on your mind?";
+                initialAiMessage = "Hi there! Let's have a conversation to improve your daily office English. What's on your mind?";
             }
         }
+        
+        const currentSystemPrompt = `You are a helpful English speaking practice AI tutor. The user is a ${answerLabels[occupation]}. Their English level is ${answerLabels[level]}. The practice scenario is ${answerLabels[scenario]}. Please keep your responses concise, conversational, and natural, aiming for back-and-forth dialogue. If they make a major grammatical error, kindly correct them gently, otherwise just continue the conversation. Respond as the character in the scenario (e.g., custom officer, colleague, examiner). Keep responses short, ideally under 3 sentences.`;
+
+        window.currentConversationHistory = [
+            {
+                role: "user",
+                parts: [{ text: currentSystemPrompt + " Let's begin the roleplay. You go first." }]
+            },
+            {
+                role: "model",
+                parts: [{ text: initialAiMessage }]
+            }
+        ];
+        aiGreeting.innerHTML = initialAiMessage;
     }
 
     let isRecording = false;
@@ -304,12 +333,55 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Update UI with actual speech
                     appendMessage('user', userSaid);
                     
-                    // Simulate AI processing response latency
-                    setTimeout(() => {
-                        const scenarioKey = state.answers[3] || 'daily_office';
-                        const mockDialog = mockConversations[scenarioKey];
-                        appendMessage('ai', mockDialog.ai);
-                    }, 1200);
+                    const apiKey = localStorage.getItem('gemini_api_key');
+                    if (apiKey) {
+                        statusText.textContent = "AI 正在思考中...";
+                        
+                        window.currentConversationHistory.push({
+                            role: "user",
+                            parts: [{ text: userSaid }]
+                        });
+
+                        fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: window.currentConversationHistory,
+                                generationConfig: {
+                                    maxOutputTokens: 150,
+                                    temperature: 0.7
+                                }
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            statusText.textContent = "點擊麥克風開始說話";
+                            if (data.error) {
+                                appendMessage('ai', `Error: ${data.error.message}`);
+                                return;
+                            }
+                            const aiText = data.candidates[0].content.parts[0].text;
+                            
+                            window.currentConversationHistory.push({
+                                role: "model",
+                                parts: [{ text: aiText }]
+                            });
+                            
+                            appendMessage('ai', aiText);
+                        })
+                        .catch(err => {
+                            statusText.textContent = "點擊麥克風開始說話";
+                            appendMessage('ai', "Sorry, I couldn't reach the AI server. Please check your network or API key.");
+                            console.error(err);
+                        });
+                    } else {
+                        // simulate AI processing response latency
+                        setTimeout(() => {
+                            const scenarioKey = state.answers[3] || 'daily_office';
+                            const mockDialog = mockConversations[scenarioKey];
+                            appendMessage('ai', mockDialog.ai + " (請在首頁輸入 API Key 以啟用真實 AI)");
+                        }, 1200);
+                    }
                 } else {
                     // The user didn't speak or mic didn't catch anything
                     appendMessage('ai', "I didn't quite catch that. Could you try speaking a bit louder?");
