@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,18 +13,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=2">
 </head>
+
 <body>
     <div id="app">
         <!-- Landing / Introduction Screen -->
         <div id="intro-screen" class="screen active fade-in">
             <h1 class="gradient-text">Speak with Confidence</h1>
             <p class="subtitle">Personalize your AI English speaking practice journey.</p>
-            
+
             <div class="api-key-container">
-                <input type="password" id="api-key-input" class="settings-input" placeholder="填入 Groq API Key (可選，以啟用超快真AI)">
-                <p class="api-link" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">若要啟用無延遲的真實對話，請輸入您的 <a href="https://console.groq.com/keys" target="_blank" style="color: var(--primary);">Groq API Key (完全免費)</a></p>
+                <input type="password" id="api-key-input" class="settings-input"
+                    placeholder="填入 Groq API Key (可選，以啟用超快真AI)">
+                <p class="api-link" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+                    若要啟用無延遲的真實對話，請輸入您的 <a href="https://console.groq.com/keys" target="_blank"
+                        style="color: var(--primary);">Groq API Key (完全免費)</a></p>
             </div>
-            
+
             <button id="start-btn" class="primary-btn pulse-glow" style="margin-top: 2rem;">開始制定我的學習計劃</button>
         </div>
 
@@ -33,7 +38,7 @@
             <div class="progress-container">
                 <div class="progress-bar" id="progress-bar"></div>
             </div>
-            
+
             <div class="question-container">
                 <!-- Step 1: Occupation -->
                 <div id="step-1" class="step active fade-in">
@@ -129,7 +134,7 @@
         <div id="learning-screen" class="screen hidden">
             <h2 id="learning-title" class="gradient-text">學習介面</h2>
             <p class="subtitle" id="learning-subtitle">開始您的專屬口語練習</p>
-            
+
             <div class="chat-container">
                 <div class="chat-message ai-message">
                     <div class="avatar"><img src="avatar.svg" alt="AI"></div>
@@ -146,13 +151,14 @@
                 </button>
                 <p class="status-text text-muted" style="margin-top: 1rem;">點擊麥克風開始說話</p>
             </div>
-            
+
             <div class="navigation-buttons" style="margin-top: 2.5rem;">
                 <button id="restart-btn" class="secondary-btn">重新設定目標</button>
             </div>
         </div>
     </div>
-    
+
     <script src="script.js?v=3"></script>
 </body>
+
 </html>
