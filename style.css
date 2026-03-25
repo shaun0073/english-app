@@ -1,477 +1,93 @@
-:root {
-    /* Color Palette */
-    --bg-color: #0b0f19;
-    --card-bg: rgba(30, 41, 59, 0.6);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --card-hover-border: #8b5cf6;
-    
-    /* Gradients & Accents */
-    --primary: #8b5cf6;
-    --primary-hover: #7c3aed;
-    --secondary: #3b82f6;
-    
-    /* Typography Colors */
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    
-    /* Design tokens */
-    --glass-blur: 16px;
-    --font-main: 'Inter', system-ui, -apple-system, sans-serif;
-}
+/* style.css - 強制對半拆分版 */
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    font-family: var(--font-main);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* Soft ambient background gradients */
-    background-image: radial-gradient(circle at 80% -20%, rgba(139, 92, 246, 0.25), transparent 40%),
-                      radial-gradient(circle at -20% 120%, rgba(59, 130, 246, 0.25), transparent 40%);
-    overflow-x: hidden;
-    line-height: 1.5;
-}
-
+/* 1. 讓整體 App 佔滿螢幕 */
 #app {
-    width: 100%;
-    max-width: 800px;
-    padding: 2rem;
-    position: relative;
-    z-index: 10;
+    height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
 }
 
-.screen {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+/* 2. 核心：讓學習介面垂直平分 */
+#learning-screen {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: #121212 !important;
 }
 
-.screen.active {
-    display: flex;
+/* 3. 上半部：AI 舞台 */
+.ai-stage {
+    flex: 1.2 !important;
+    /* 佔據比例 */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 20px !important;
+    border-bottom: 1px solid #333 !important;
 }
 
-.hidden {
-    display: none !important;
+/* 4. 下半部：使用者面板 */
+.user-interaction-panel {
+    flex: 1 !important;
+    /* 佔據比例 */
+    background: #1e1e1e !important;
+    border-top-left-radius: 30px !important;
+    border-top-right-radius: 30px !important;
+    padding: 25px !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
-/* Typography */
-h1 {
-    font-size: 3.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    letter-spacing: -0.05em;
-    line-height: 1.1;
+/* --- 元件樣式 (確保看起來像 App) --- */
+.main-avatar {
+    width: 120px !important;
+    height: 120px !important;
+    border-radius: 50% !important;
+    border: 3px solid #00f2fe !important;
+    position: relative !important;
+    margin-bottom: 15px !important;
 }
 
-h2 {
-    font-size: 2.2rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+.main-avatar img {
+    width: 100% !important;
+    border-radius: 50% !important;
 }
 
-.subtitle {
-    color: var(--text-muted);
-    font-size: 1.15rem;
-    margin-bottom: 2.5rem;
-    max-width: 500px;
+.ai-speech-bubble {
+    background: #2a2a2a !important;
+    padding: 12px 20px !important;
+    border-radius: 15px !important;
+    color: white !important;
+    text-align: center !important;
+    max-width: 85% !important;
 }
 
-.gradient-text {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+.transcript-box {
+    flex: 1 !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    border-radius: 15px !important;
+    padding: 15px !important;
+    margin-bottom: 20px !important;
 }
 
-/* Buttons */
-button {
-    font-family: var(--font-main);
-    cursor: pointer;
-    border: none;
-    outline: none;
-    border-radius: 9999px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    padding: 1rem 2.5rem;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.primary-btn {
-    background: linear-gradient(135deg, var(--primary), #6366f1);
-    color: white;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
-}
-
-.primary-btn:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
-}
-
-.primary-btn:active {
-    transform: translateY(1px) scale(0.98);
-}
-
-.secondary-btn {
-    background: transparent;
-    color: var(--text-main);
-    border: 1px solid var(--text-muted);
-}
-
-.secondary-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--text-main);
-}
-
-/* Questionnaire Layout */
-.progress-container {
-    width: 100%;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 999px;
-    margin-bottom: 3.5rem;
-    overflow: hidden;
-}
-
-.progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--secondary), var(--primary));
-    width: 0%;
-    border-radius: 999px;
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.question-container {
-    width: 100%;
-    min-height: 420px;
-    position: relative;
-}
-
-.step {
-    display: none;
-    flex-direction: column;
-    width: 100%;
-    align-items: center;
-}
-
-.step.active {
-    display: flex;
-}
-
-/* Grid Layout for options */
-.options-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.25rem;
-    width: 100%;
-    margin-bottom: 2rem;
-}
-
-/* Option Cards (Glassmorphism) */
-.option-card {
-    background: var(--card-bg);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 2.5rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.2rem;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    overflow: hidden;
-}
-
-.option-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.option-card:hover {
-    transform: translateY(-6px);
-    border-color: var(--card-hover-border);
-    background: rgba(40, 53, 75, 0.7);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-}
-
-.option-card:hover::before {
-    opacity: 1;
-}
-
-.option-card.selected {
-    border-color: var(--primary);
-    background: rgba(139, 92, 246, 0.12);
-    box-shadow: 0 0 25px rgba(139, 92, 246, 0.25);
-    transform: scale(1.02);
-}
-
-.option-card .icon {
-    font-size: 3.2rem;
-    margin-bottom: 0.5rem;
-    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
-    transition: transform 0.3s ease;
-}
-
-.option-card:hover .icon {
-    transform: scale(1.1);
-}
-
-.option-card .label {
-    font-size: 1.25rem;
-    font-weight: 500;
-}
-
-.navigation-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    width: 100%;
-    margin-top: 2rem;
-}
-
-/* Result summary */
-.result-summary {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 2.5rem;
-    margin: 2.5rem 0;
-    width: 100%;
-    max-width: 550px;
-    text-align: left;
-    backdrop-filter: blur(var(--glass-blur));
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-}
-
-.summary-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 1.2rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.summary-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.summary-item:first-child {
-    padding-top: 0;
-}
-
-.summary-label {
-    color: var(--text-muted);
-    font-size: 1.1rem;
-}
-
-.summary-value {
-    font-weight: 600;
-    color: var(--primary);
-    font-size: 1.15rem;
-}
-
-/* Animations */
-.fade-in {
-    animation: fadeIn 0.6s ease forwards;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); filter: blur(5px); }
-    to { opacity: 1; transform: translateY(0); filter: blur(0); }
-}
-
-.pulse-glow {
-    animation: pulseGlow 2.5s infinite;
-}
-
-@keyframes pulseGlow {
-    0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
-    70% { box-shadow: 0 0 0 15px rgba(139, 92, 246, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
-}
-
-/* Learning Screen & Chat UI */
-.chat-container {
-    width: 100%;
-    max-width: 600px;
-    background: rgba(15, 23, 42, 0.4);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    display: flex;
-    flex-direction: column;
-    min-height: 250px;
-    max-height: 350px;
-    overflow-y: auto;
-}
-
-.chat-message {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-}
-
-.chat-message .avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    color: white;
-    font-size: 1.1rem;
-    box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
-    flex-shrink: 0;
-}
-
-.chat-message .avatar img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.avatar.speaking {
-    animation: avatarPulse 1.5s infinite alternate;
-    box-shadow: 0 0 15px 5px rgba(139, 92, 246, 0.6);
-}
-
-@keyframes avatarPulse {
-    0% { transform: scale(1); box-shadow: 0 0 10px 2px rgba(139, 92, 246, 0.4); }
-    100% { transform: scale(1.1); box-shadow: 0 0 20px 8px rgba(59, 130, 246, 0.8); }
-}
-
-.message-content {
-    background: var(--card-bg);
-    padding: 1.2rem 1.5rem;
-    border-radius: 0 20px 20px 20px;
-    border: 1px solid var(--card-border);
-    max-width: 85%;
-    text-align: left;
-    font-size: 1.15rem;
-    line-height: 1.6;
-}
-
-.chat-message.user-message {
-    flex-direction: row-reverse;
-}
-
-.chat-message.user-message .avatar {
-    background: linear-gradient(135deg, #10b981, #059669); /* Green avatar for the user */
-}
-
-.chat-message.user-message .message-content {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    border: none;
-    border-radius: 20px 0 20px 20px;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
-}
-
-.recording-controls {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
+.live-text {
+    color: #00f2fe !important;
+    font-size: 1.2rem !important;
 }
 
 .mic-button {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #ef4444, #b91c1c);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.mic-button:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
-}
-
-.mic-button:active {
-    transform: scale(0.95);
+    width: 70px !important;
+    height: 70px !important;
+    font-size: 2rem !important;
+    border-radius: 50% !important;
+    background: #00f2fe !important;
+    border: none !important;
 }
 
 .mic-button.recording {
-    animation: micPulseRed 1.5s infinite;
-}
-
-@keyframes micPulseRed {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-    70% { box-shadow: 0 0 0 25px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-.mic-button .icon {
-    font-size: 2.5rem;
-    margin: 0;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-}
-
-.text-muted {
-    color: var(--text-muted);
-}
-
-.api-key-container {
-    margin: 1.5rem 0;
-    width: 100%;
-    max-width: 400px;
-}
-
-.settings-input {
-    width: 100%;
-    padding: 0.8rem 1.2rem;
-    border-radius: 12px;
-    border: 1px solid var(--card-border);
-    background: rgba(15, 23, 42, 0.6);
-    color: var(--text-main);
-    font-family: var(--font-main);
-    font-size: 1rem;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-.settings-input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
-}
-
-/* Responsive adjust */
-@media (max-width: 600px) {
-    h1 { font-size: 2.5rem; }
-    h2 { font-size: 1.8rem; }
-    .options-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-    .option-card {
-        padding: 1.5rem 1rem;
-    }
-    .option-card .icon {
-        font-size: 2.5rem;
-    }
+    background: #ff4b2b !important;
 }
