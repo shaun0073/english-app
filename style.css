@@ -1,93 +1,197 @@
-/* style.css - 強制對半拆分版 */
+/* style.css - 完美還原深色質感版 */
 
-/* 1. 讓整體 App 佔滿螢幕 */
-#app {
-    height: 100vh !important;
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important;
+:root {
+    --primary: #8a2be2;
+    /* 改回原本偏紫色的色調，如果你喜歡青色可改回 #00f2fe */
+    --primary-rgb: 138, 43, 226;
+    --bg-dark: #121212;
+    --card-bg: #1e1e1e;
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
 }
 
-/* 2. 核心：讓學習介面垂直平分 */
-#learning-screen {
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100% !important;
-    padding: 0 !important;
+/* 強制背景為黑色，防止白色畫面出現 */
+body,
+html {
     margin: 0 !important;
-    background-color: #121212 !important;
-}
-
-/* 3. 上半部：AI 舞台 */
-.ai-stage {
-    flex: 1.2 !important;
-    /* 佔據比例 */
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    padding: 20px !important;
-    border-bottom: 1px solid #333 !important;
-}
-
-/* 4. 下半部：使用者面板 */
-.user-interaction-panel {
-    flex: 1 !important;
-    /* 佔據比例 */
-    background: #1e1e1e !important;
-    border-top-left-radius: 30px !important;
-    border-top-right-radius: 30px !important;
-    padding: 25px !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-/* --- 元件樣式 (確保看起來像 App) --- */
-.main-avatar {
-    width: 120px !important;
-    height: 120px !important;
-    border-radius: 50% !important;
-    border: 3px solid #00f2fe !important;
-    position: relative !important;
-    margin-bottom: 15px !important;
-}
-
-.main-avatar img {
+    padding: 0 !important;
     width: 100% !important;
-    border-radius: 50% !important;
+    height: 100% !important;
+    background-color: var(--bg-dark) !important;
+    color: var(--text-main) !important;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
 }
 
-.ai-speech-bubble {
-    background: #2a2a2a !important;
-    padding: 12px 20px !important;
-    border-radius: 15px !important;
-    color: white !important;
-    text-align: center !important;
-    max-width: 85% !important;
+#app {
+    max-width: 500px;
+    margin: 0 auto;
+    height: 100vh;
+    position: relative;
+    background-color: var(--bg-dark);
 }
 
-.transcript-box {
-    flex: 1 !important;
-    background: rgba(0, 0, 0, 0.3) !important;
-    border-radius: 15px !important;
-    padding: 15px !important;
-    margin-bottom: 20px !important;
+/* 讓所有螢幕滿版且垂直排列 */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    /* 預設隱藏 */
+    flex-direction: column;
+    padding: 40px 20px;
+    box-sizing: border-box;
+    background-color: var(--bg-dark);
 }
 
-.live-text {
-    color: #00f2fe !important;
-    font-size: 1.2rem !important;
+.screen.active {
+    display: flex !important;
+    /* 只有 active 才顯示 */
+}
+
+/* 標題與文字 */
+.gradient-text {
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 30px;
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* 問卷卡片：解決擠在一起的問題 */
+.question-container {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.options-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+    width: 100%;
+}
+
+.option-card {
+    background: var(--card-bg);
+    padding: 18px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.option-card:hover,
+.option-card.selected {
+    border-color: var(--primary);
+    background: rgba(var(--primary-rgb), 0.1);
+    transform: translateY(-2px);
+}
+
+/* 按鈕 */
+.primary-btn {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.3);
+}
+
+/* 學習頁面：對話氣泡 */
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.chat-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    position: relative;
+    overflow: visible;
+}
+
+.avatar img {
+    width: 100%;
+    border-radius: 50%;
+}
+
+.message-content {
+    background: var(--card-bg);
+    padding: 15px 20px;
+    border-radius: 20px;
+    max-width: 80%;
+    border-top-left-radius: 5px;
+}
+
+/* 錄音控制 */
+.recording-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 30px;
 }
 
 .mic-button {
-    width: 70px !important;
-    height: 70px !important;
-    font-size: 2rem !important;
-    border-radius: 50% !important;
-    background: #00f2fe !important;
-    border: none !important;
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    background: #ff4b2b;
+    border: none;
+    font-size: 2rem;
+    box-shadow: 0 0 25px rgba(255, 75, 43, 0.4);
+    cursor: pointer;
 }
 
-.mic-button.recording {
-    background: #ff4b2b !important;
+/* 動畫 */
+@keyframes ripple {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+.avatar.speaking::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    animation: ripple 1.5s infinite;
 }

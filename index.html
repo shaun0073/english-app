@@ -3,117 +3,91 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Speaking Practice</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>English AI Tutor</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
-    <link rel="icon" type="image/svg+xml" href="icon.svg">
-    <link rel="apple-touch-icon" href="icon.svg">
-    <!-- Use Inter font for a modern, sleek look -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=2">
+
+    <style>
+        body {
+            background-color: #121212 !important;
+            color: white !important;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: sans-serif;
+        }
+
+        #app {
+            text-align: center;
+        }
+
+        .gradient-text {
+            color: #8a2be2;
+            font-size: 2rem;
+        }
+    </style>
 </head>
 
 <body>
     <div id="app">
-        <!-- Landing / Introduction Screen -->
         <div id="intro-screen" class="screen active fade-in">
             <h1 class="gradient-text">Speak with Confidence</h1>
             <p class="subtitle">Personalize your AI English speaking practice journey.</p>
 
             <div class="api-key-container">
-                <input type="password" id="api-key-input" class="settings-input"
-                    placeholder="填入 Groq API Key (可選，以啟用超快真AI)">
+                <input type="password" id="api-key-input" class="settings-input" placeholder="填入 Groq API Key (可選)">
                 <p class="api-link" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
                     若要啟用無延遲的真實對話，請輸入您的 <a href="https://console.groq.com/keys" target="_blank"
-                        style="color: var(--primary);">Groq API Key (完全免費)</a></p>
+                        style="color: var(--primary);">Groq API Key (完全免費)</a>
+                </p>
             </div>
 
             <button id="start-btn" class="primary-btn pulse-glow" style="margin-top: 2rem;">開始制定我的學習計劃</button>
         </div>
 
-        <!-- Questionnaire Screen -->
         <div id="questionnaire-screen" class="screen hidden">
-            <!-- Progress Indicator -->
             <div class="progress-container">
                 <div class="progress-bar" id="progress-bar"></div>
             </div>
 
             <div class="question-container">
-                <!-- Step 1: Occupation -->
                 <div id="step-1" class="step active fade-in">
                     <h2>你的職業是？</h2>
                     <p class="subtitle">這將幫助我們為您推薦最適合的對話難度與詞彙。</p>
                     <div class="options-grid" data-step="1">
-                        <div class="option-card" data-value="engineer">
-                            <span class="icon">💻</span>
-                            <span class="label">工程師</span>
-                        </div>
-                        <div class="option-card" data-value="sales">
-                            <span class="icon">🤝</span>
-                            <span class="label">銷售</span>
-                        </div>
-                        <div class="option-card" data-value="housewife">
-                            <span class="icon">🏠</span>
-                            <span class="label">全職媽媽</span>
-                        </div>
-                        <div class="option-card" data-value="student">
-                            <span class="icon">🎓</span>
-                            <span class="label">學生</span>
-                        </div>
-                        <div class="option-card" data-value="other">
-                            <span class="icon">✨</span>
-                            <span class="label">其他</span>
-                        </div>
+                        <div class="option-card" data-value="engineer">💻 工程師</div>
+                        <div class="option-card" data-value="sales">🤝 銷售</div>
+                        <div class="option-card" data-value="housewife">🏠 全職媽媽</div>
+                        <div class="option-card" data-value="student">🎓 學生</div>
+                        <div class="option-card" data-value="other">✨ 其他</div>
                     </div>
                 </div>
 
-                <!-- Step 2: Level -->
                 <div id="step-2" class="step hidden">
                     <h2>你的英語程度是？</h2>
                     <p class="subtitle">選擇您的起點，讓我們調整發音辨識與對話速度。</p>
                     <div class="options-grid" data-step="2">
-                        <div class="option-card" data-value="beginner">
-                            <span class="icon">🌱</span>
-                            <span class="label">初學者 (Beginner)</span>
-                        </div>
-                        <div class="option-card" data-value="intermediate">
-                            <span class="icon">🌿</span>
-                            <span class="label">中級 (Intermediate)</span>
-                        </div>
-                        <div class="option-card" data-value="advanced">
-                            <span class="icon">🌳</span>
-                            <span class="label">進階 (Advanced)</span>
-                        </div>
+                        <div class="option-card" data-value="beginner">🌱 初學者 (Beginner)</div>
+                        <div class="option-card" data-value="intermediate">🌿 中級 (Intermediate)</div>
+                        <div class="option-card" data-value="advanced">🌳 進階 (Advanced)</div>
                     </div>
                 </div>
 
-                <!-- Step 3: Scenario -->
                 <div id="step-3" class="step hidden">
                     <h2>你想練習的場景是？</h2>
                     <p class="subtitle">最後一步，選擇您最想精進的生活與工作情境。</p>
                     <div class="options-grid" data-step="3">
-                        <div class="option-card" data-value="daily_office">
-                            <span class="icon">🏢</span>
-                            <span class="label">日常辦公</span>
-                        </div>
-                        <div class="option-card" data-value="business_meeting">
-                            <span class="icon">📊</span>
-                            <span class="label">商務會議</span>
-                        </div>
-                        <div class="option-card" data-value="travel">
-                            <span class="icon">✈️</span>
-                            <span class="label">出國旅行</span>
-                        </div>
-                        <div class="option-card" data-value="exam">
-                            <span class="icon">📝</span>
-                            <span class="label">考試備考</span>
-                        </div>
+                        <div class="option-card" data-value="daily_office">🏢 日常辦公</div>
+                        <div class="option-card" data-value="business_meeting">📊 商務會議</div>
+                        <div class="option-card" data-value="travel">✈️ 出國旅行</div>
+                        <div class="option-card" data-value="exam">📝 考試備考</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Navigation Controls -->
             <div class="navigation-buttons">
                 <button id="prev-btn" class="secondary-btn hidden">上一步</button>
                 <button id="next-btn" class="primary-btn hidden">下一步</button>
@@ -121,44 +95,40 @@
             </div>
         </div>
 
-        <!-- Result Screen -->
         <div id="result-screen" class="screen hidden">
-            <h2 class="gradient-text">為您量身打造的學習計畫<br>已準備就緒！</h2>
-            <div class="result-summary" id="result-summary">
-                <!-- Data inserted by script.js -->
-            </div>
+            <h2 class="gradient-text">計畫已就緒</h2>
+            <div class="result-summary" id="result-summary"></div>
             <button id="start-learning-btn" class="primary-btn pulse-glow">進入學習頁面</button>
         </div>
 
-        <!-- Learning Interface Screen -->
         <div id="learning-screen" class="screen hidden">
-            <h2 id="learning-title" class="gradient-text">學習介面</h2>
-            <p class="subtitle" id="learning-subtitle">開始您的專屬口語練習</p>
+            <h2 id="learning-title" class="gradient-text">準備就緒</h2>
+            <p class="subtitle">開始您的專屬口語練習</p>
 
             <div class="chat-container">
                 <div class="chat-message ai-message">
-                    <div class="avatar"><img src="avatar.svg" alt="AI"></div>
+                    <div class="avatar">
+                        <img src="avatar_f.svg" alt="AI">
+                        <div class="pulse-ring"></div>
+                    </div>
                     <div class="message-content" id="ai-greeting">
-                        Hello! Let's start speaking.
+                        Hello! Let's start our conversation.
                     </div>
                 </div>
-                <!-- User message placeholder will go here dynamically -->
             </div>
 
             <div class="recording-controls">
-                <button id="mic-btn" class="mic-button pulse-glow">
-                    <span class="icon">🎙️</span>
-                </button>
-                <p class="status-text text-muted" style="margin-top: 1rem;">點擊麥克風開始說話</p>
+                <button id="mic-btn" class="mic-button pulse-glow">🎙️</button>
+                <p id="user-live-transcript" class="status-text text-muted" style="margin-top: 1rem;">點擊麥克風開始說話</p>
             </div>
 
-            <div class="navigation-buttons" style="margin-top: 2.5rem;">
+            <div class="navigation-buttons" style="margin-top: 1.5rem;">
                 <button id="restart-btn" class="secondary-btn">重新設定目標</button>
             </div>
         </div>
     </div>
 
-    <script src="script.js?v=3"></script>
+    <script src="script.js?v=999"></script>
 </body>
 
 </html>
