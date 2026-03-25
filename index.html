@@ -38,10 +38,11 @@
             height: 100vh;
             background-color: var(--bg-dark);
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
         }
 
         /* === 2. 解決重疊的核心邏輯 === */
-        /* 所有的螢幕預設為隱藏，並加上垂直滾動功能 */
         .screen {
             display: none !important;
             position: absolute;
@@ -54,29 +55,23 @@
             box-sizing: border-box;
             background-color: var(--bg-dark);
             overflow-y: auto;
-            /* 🚀 允許畫面內容過多時可上下滾動 */
             -webkit-overflow-scrolling: touch;
-            /* 🚀 讓手機(特別是iOS)滑動更順暢 */
         }
 
-        /* 只有帶有 active 的螢幕才顯示 */
         .screen.active {
             display: flex !important;
             z-index: 10;
         }
 
-        /* 問卷裡面的步驟預設也是隱藏 */
         .step {
             display: none !important;
             flex-direction: column;
             gap: 15px;
             width: 100%;
             flex: 1;
-            /* 🚀 讓步驟撐滿剩餘空間，確保按鈕能順利排在底部或跟著滾動 */
             animation: fadeIn 0.4s ease;
         }
 
-        /* 只有帶有 active 的步驟才顯示 */
         .step.active {
             display: flex !important;
         }
@@ -174,7 +169,6 @@
             align-self: center;
         }
 
-        /* 輸入框 */
         .settings-input {
             width: 100%;
             background: var(--card-bg);
@@ -186,62 +180,112 @@
             font-size: 1rem;
         }
 
-        /* 學習對話頁面 */
-        .chat-container {
+        /* === 4. 學習對話頁面：一半一半版面 === */
+        #learning-screen {
+            padding: 0 !important;
+            /* 滿版顯示 */
+            overflow: hidden;
+            /* 對話頁面不需要整頁滾動 */
+        }
+
+        .split-half {
             flex: 1;
+            /* 各佔 50% 高度 */
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        .chat-message {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
+        /* 上半部：AI 經理 */
+        .ai-half {
+            background: linear-gradient(180deg, #1f1c2c 0%, var(--bg-dark) 100%);
         }
 
-        .avatar {
-            width: 45px;
-            height: 45px;
+        /* 下半部：使用者 */
+        .user-half {
+            background: var(--card-bg);
+            border-top: 2px solid var(--primary);
+            box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .avatar.large {
+            width: 80px;
+            height: 80px;
+            font-size: 3.5rem;
             border-radius: 50%;
-            border: 2px solid var(--primary);
-            flex-shrink: 0;
+            border: 3px solid var(--primary);
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #333;
+            background: rgba(138, 43, 226, 0.1);
+            margin-bottom: 10px;
         }
 
-        .message-content {
-            background: var(--card-bg);
-            padding: 15px 20px;
-            border-radius: 18px;
-            max-width: 80%;
+        .transcript-box {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 15px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.1rem;
             line-height: 1.5;
-            border-top-left-radius: 4px;
+            margin-top: 15px;
+            box-sizing: border-box;
+        }
+
+        .ai-transcript {
+            border-left: 4px solid var(--primary);
+            color: #fff;
+        }
+
+        .user-transcript {
+            border-left: 4px solid #ff4b2b;
+            color: #888;
         }
 
         .recording-controls {
-            padding: 30px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            margin-top: 20px;
         }
 
         .mic-button {
-            width: 75px;
-            height: 75px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background: #ff4b2b;
             border: none;
-            font-size: 2rem;
-            box-shadow: 0 0 20px rgba(255, 75, 43, 0.4);
+            font-size: 2.2rem;
+            box-shadow: 0 0 25px rgba(255, 75, 43, 0.4);
             cursor: pointer;
             transition: transform 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .mic-button:active {
             transform: scale(0.9);
+        }
+
+        #leave-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            margin: 0;
+            padding: 8px 15px;
+            font-size: 0.85rem;
         }
     </style>
 </head>
@@ -314,25 +358,30 @@
 
         </div>
 
-        <!-- ==================== 3. 學習對話頁 ==================== -->
+        <!-- ==================== 3. 學習對話頁 (一半一半版面) ==================== -->
         <div id="learning-screen" class="screen">
-            <h2 class="gradient-text" style="font-size: 1.5rem; margin-top: 0;">對話練習</h2>
 
-            <div class="chat-container">
-                <div class="chat-message ai-message">
-                    <div class="avatar">🤖</div>
-                    <div class="message-content">
-                        Hello! 根據您設定的背景，我們現在可以開始練習了。請點擊下方的麥克風開始說話。
-                    </div>
+            <!-- 上半部：AI (經理/對話對象) -->
+            <div class="split-half ai-half">
+                <button id="leave-btn" class="secondary-btn">⬅ 離開</button>
+                <div class="avatar large">👨‍💼</div>
+                <h3 style="margin: 5px 0 0 0; color: var(--primary);">Manager</h3>
+                <div class="transcript-box ai-transcript">
+                    Hello! 根據您設定的背景，我們現在可以開始練習了。請點擊下方的麥克風開始說話。
                 </div>
             </div>
 
-            <div class="recording-controls">
-                <button id="mic-btn" class="mic-button">🎙️</button>
-                <p id="status-text" style="color: #888; margin-top: 15px; font-size: 0.9rem;">等待錄音...</p>
+            <!-- 下半部：使用者 (自己) -->
+            <div class="split-half user-half">
+                <div class="transcript-box user-transcript">
+                    (你說的話會顯示在這裡...)
+                </div>
+                <div class="recording-controls">
+                    <button id="mic-btn" class="mic-button">🎙️</button>
+                    <p id="status-text" style="color: #888; margin-top: 15px; font-size: 0.9rem;">等待錄音...</p>
+                </div>
             </div>
 
-            <button id="restart-btn" class="secondary-btn">🔄 重新設定目標</button>
         </div>
     </div>
 
@@ -353,10 +402,8 @@
             const optionCards = document.querySelectorAll('.option-card');
             optionCards.forEach(card => {
                 card.addEventListener('click', function () {
-                    // 把同一個 step 裡面的其他選項取消選取
                     const siblings = this.parentElement.querySelectorAll('.option-card');
                     siblings.forEach(s => s.classList.remove('selected'));
-                    // 將自己標記為選取
                     this.classList.add('selected');
                 });
             });
@@ -367,7 +414,6 @@
             document.getElementById('start-btn').addEventListener('click', () => {
                 introScreen.classList.remove('active');
                 questionnaireScreen.classList.add('active');
-                // 確保從第一步開始
                 step1.classList.add('active');
                 step2.classList.remove('active');
                 step3.classList.remove('active');
@@ -377,11 +423,9 @@
             document.getElementById('next-1-btn').addEventListener('click', () => {
                 step1.classList.remove('active');
                 step2.classList.add('active');
-                // 讓滾輪回到最上方
                 questionnaireScreen.scrollTop = 0;
             });
 
-            // 返回 Step 1
             document.getElementById('back-1-btn').addEventListener('click', () => {
                 step2.classList.remove('active');
                 step1.classList.add('active');
@@ -395,7 +439,6 @@
                 questionnaireScreen.scrollTop = 0;
             });
 
-            // 返回 Step 2
             document.getElementById('back-2-btn').addEventListener('click', () => {
                 step3.classList.remove('active');
                 step2.classList.add('active');
@@ -406,23 +449,29 @@
             document.getElementById('finish-btn').addEventListener('click', () => {
                 questionnaireScreen.classList.remove('active');
                 learningScreen.classList.add('active');
-                learningScreen.scrollTop = 0;
             });
 
-            // 5. 重新設定 -> 回到首頁
-            document.getElementById('restart-btn').addEventListener('click', () => {
+            // 5. 離開 -> 回到首頁
+            document.getElementById('leave-btn').addEventListener('click', () => {
                 learningScreen.classList.remove('active');
                 introScreen.classList.add('active');
             });
 
-            // 6. 模擬麥克風按鈕
+            // 6. 模擬麥克風按鈕 (與文字框互動效果)
             document.getElementById('mic-btn').addEventListener('click', () => {
                 const status = document.getElementById('status-text');
+                const userTranscript = document.querySelector('.user-transcript');
+
                 status.innerText = "錄音中... (測試)";
                 status.style.color = "#ff4b2b";
+
+                userTranscript.innerText = "我正在說話測試...";
+                userTranscript.style.color = "#fff";
+
                 setTimeout(() => {
                     status.innerText = "等待錄音...";
                     status.style.color = "#888";
+                    userTranscript.innerText = "Hello, I'd like to discuss the project update with you.";
                 }, 2000);
             });
         });
