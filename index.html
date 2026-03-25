@@ -7,128 +7,178 @@
     <title>English AI Tutor</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
     <style>
-        body {
-            background-color: #121212 !important;
+        /* --- 1. 核心版面設定 (修正重疊關鍵) --- */
+        :root {
+            --primary: #8a2be2;
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --text-muted: #a0a0a0;
+        }
+
+        body,
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100% !important;
+            background-color: var(--bg-dark) !important;
             color: white !important;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: sans-serif;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
         }
 
         #app {
-            text-align: center;
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            max-width: 500px;
+            margin: 0 auto;
         }
 
+        /* 🚀 這是解決重疊最重要的部分：所有螢幕預設全部消失 */
+        .screen {
+            display: none !important;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            background-color: var(--bg-dark);
+        }
+
+        /* 🚀 只有帶有 .active 標籤的螢幕才會顯示出來 */
+        .screen.active {
+            display: flex !important;
+            z-index: 10;
+        }
+
+        /* --- 2. 精緻化介面樣式 --- */
         .gradient-text {
-            color: #8a2be2;
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .option-card {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .option-card.selected {
+            border-color: var(--primary);
+            background: rgba(138, 43, 226, 0.2);
+        }
+
+        .primary-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+        }
+
+        /* --- 3. 學習練習頁 (氣泡與控制) --- */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            flex-shrink: 0;
+        }
+
+        .avatar img {
+            width: 100%;
+            border-radius: 50%;
+        }
+
+        .message-content {
+            background: var(--card-bg);
+            padding: 12px 18px;
+            border-radius: 18px;
+            max-width: 75%;
+            line-height: 1.5;
+        }
+
+        .recording-controls {
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .mic-button {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background: #ff4b2b;
+            border: none;
             font-size: 2rem;
+            box-shadow: 0 0 20px rgba(255, 75, 43, 0.4);
+            cursor: pointer;
+        }
+
+        .settings-input {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid #333;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
 
 <body>
     <div id="app">
-        <div id="intro-screen" class="screen active fade-in">
-            <h1 class="gradient-text">Speak with Confidence</h1>
-            <p class="subtitle">Personalize your AI English speaking practice journey.</p>
-
-            <div class="api-key-container">
-                <input type="password" id="api-key-input" class="settings-input" placeholder="填入 Groq API Key (可選)">
-                <p class="api-link" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
-                    若要啟用無延遲的真實對話，請輸入您的 <a href="https://console.groq.com/keys" target="_blank"
-                        style="color: var(--primary);">Groq API Key (完全免費)</a>
-                </p>
-            </div>
-
-            <button id="start-btn" class="primary-btn pulse-glow" style="margin-top: 2rem;">開始制定我的學習計劃</button>
-        </div>
-
-        <div id="questionnaire-screen" class="screen hidden">
-            <div class="progress-container">
-                <div class="progress-bar" id="progress-bar"></div>
-            </div>
-
-            <div class="question-container">
-                <div id="step-1" class="step active fade-in">
-                    <h2>你的職業是？</h2>
-                    <p class="subtitle">這將幫助我們為您推薦最適合的對話難度與詞彙。</p>
-                    <div class="options-grid" data-step="1">
-                        <div class="option-card" data-value="engineer">💻 工程師</div>
-                        <div class="option-card" data-value="sales">🤝 銷售</div>
-                        <div class="option-card" data-value="housewife">🏠 全職媽媽</div>
-                        <div class="option-card" data-value="student">🎓 學生</div>
-                        <div class="option-card" data-value="other">✨ 其他</div>
-                    </div>
-                </div>
-
-                <div id="step-2" class="step hidden">
-                    <h2>你的英語程度是？</h2>
-                    <p class="subtitle">選擇您的起點，讓我們調整發音辨識與對話速度。</p>
-                    <div class="options-grid" data-step="2">
-                        <div class="option-card" data-value="beginner">🌱 初學者 (Beginner)</div>
-                        <div class="option-card" data-value="intermediate">🌿 中級 (Intermediate)</div>
-                        <div class="option-card" data-value="advanced">🌳 進階 (Advanced)</div>
-                    </div>
-                </div>
-
-                <div id="step-3" class="step hidden">
-                    <h2>你想練習的場景是？</h2>
-                    <p class="subtitle">最後一步，選擇您最想精進的生活與工作情境。</p>
-                    <div class="options-grid" data-step="3">
-                        <div class="option-card" data-value="daily_office">🏢 日常辦公</div>
-                        <div class="option-card" data-value="business_meeting">📊 商務會議</div>
-                        <div class="option-card" data-value="travel">✈️ 出國旅行</div>
-                        <div class="option-card" data-value="exam">📝 考試備考</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="navigation-buttons">
-                <button id="prev-btn" class="secondary-btn hidden">上一步</button>
-                <button id="next-btn" class="primary-btn hidden">下一步</button>
-                <button id="finish-btn" class="primary-btn pulse-glow hidden">完成</button>
-            </div>
-        </div>
-
-        <div id="result-screen" class="screen hidden">
-            <h2 class="gradient-text">計畫已就緒</h2>
-            <div class="result-summary" id="result-summary"></div>
-            <button id="start-learning-btn" class="primary-btn pulse-glow">進入學習頁面</button>
-        </div>
-
-        <div id="learning-screen" class="screen hidden">
-            <h2 id="learning-title" class="gradient-text">準備就緒</h2>
-            <p class="subtitle">開始您的專屬口語練習</p>
-
-            <div class="chat-container">
-                <div class="chat-message ai-message">
-                    <div class="avatar">
-                        <img src="avatar_f.svg" alt="AI">
-                        <div class="pulse-ring"></div>
-                    </div>
-                    <div class="message-content" id="ai-greeting">
-                        Hello! Let's start our conversation.
-                    </div>
-                </div>
-            </div>
-
-            <div class="recording-controls">
-                <button id="mic-btn" class="mic-button pulse-glow">🎙️</button>
-                <p id="user-live-transcript" class="status-text text-muted" style="margin-top: 1rem;">點擊麥克風開始說話</p>
-            </div>
-
-            <div class="navigation-buttons" style="margin-top: 1.5rem;">
-                <button id="restart-btn" class="secondary-btn">重新設定目標</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js?v=999"></script>
-</body>
-
-</html>
+        <div id="intro-screen" class="screen active">
+            <h1 class="gradient-text
