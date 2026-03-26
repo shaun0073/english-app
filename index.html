@@ -464,11 +464,25 @@
                 aiTranscript.innerText = "Manager is typing...";
                 aiTranscript.style.color = "#888";
 
-                // 1.5 秒後 AI 正式開口
+                // 1.5 秒後 AI 正式開口並發聲
                 setTimeout(() => {
-                    aiTranscript.innerText = "Hello! Glad to see you here. Are you ready to start our conversation practice?";
+                    const greetingMessage = "Hello! Glad to see you here. Are you ready to start our conversation practice?";
+                    aiTranscript.innerText = greetingMessage;
                     aiTranscript.style.color = "#fff";
                     statusText.innerText = "換你了，請點擊麥克風說話";
+
+                    // 呼叫 Web Speech API 進行語音合成
+                    if ('speechSynthesis' in window) {
+                        // 確保先停止之前的任何語音
+                        window.speechSynthesis.cancel();
+
+                        const utterance = new SpeechSynthesisUtterance(greetingMessage);
+                        utterance.lang = 'en-US'; // 設定語系為英文
+                        utterance.rate = 0.9;     // 稍微放慢語速，感覺更像在對話
+                        utterance.pitch = 1.0;    // 預設音調
+
+                        window.speechSynthesis.speak(utterance);
+                    }
                 }, 1500);
             });
 
@@ -476,12 +490,22 @@
             document.getElementById('leave-btn').addEventListener('click', () => {
                 learningScreen.classList.remove('active');
                 introScreen.classList.add('active');
+
+                // 離開時停止講話
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
             });
 
             // 6. 模擬麥克風按鈕 (與文字框互動效果)
             document.getElementById('mic-btn').addEventListener('click', () => {
                 const status = document.getElementById('status-text');
                 const userTranscript = document.querySelector('.user-transcript');
+
+                // 如果正在講話，點擊麥克風可以打斷
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
 
                 status.innerText = "錄音中... (測試)";
                 status.style.color = "#ff4b2b";
