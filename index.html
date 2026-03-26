@@ -398,6 +398,17 @@
             const step2 = document.getElementById('step-2');
             const step3 = document.getElementById('step-3');
 
+            // 初始化語音辨識功能 (Web Speech API)
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            let recognition = null;
+
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = false; // 講完一段就自動停止
+                recognition.interimResults = true; // 即時顯示辨識結果
+                recognition.lang = 'en-US'; // 練習英文所以設定英文
+            }
+
             // --- 點擊選項卡片的效果 ---
             const optionCards = document.querySelectorAll('.option-card');
             optionCards.forEach(card => {
@@ -494,33 +505,84 @@
                 learningScreen.classList.remove('active');
                 introScreen.classList.add('active');
 
-                // 離開時停止講話
+                // 離開時停止講話與聆聽
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                 }
+                if (recognition) {
+                    recognition.abort();
+                }
             });
 
-            // 6. 模擬麥克風按鈕 (與文字框互動效果)
+            // 6. 真實的語音辨識機制
             document.getElementById('mic-btn').addEventListener('click', () => {
                 const status = document.getElementById('status-text');
                 const userTranscript = document.querySelector('.user-transcript');
 
-                // 如果正在講話，點擊麥克風可以打斷
+                // 如果 AI 還在講話，點擊麥克風可以打斷他
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                 }
 
-                status.innerText = "錄音中... (測試)";
-                status.style.color = "#ff4b2b";
+                // 檢查瀏覽器是否支援
+                if (!recognition) {
+                    alert("您的瀏覽器不支援語音辨識功能，建議使用 Chrome 或 Safari。");
+                    return;
+                }
 
-                userTranscript.innerText = "我正在說話測試...";
-                userTranscript.style.color = "#fff";
+                // 設定辨識過程中的回饋
+                recognition.onstart = () => {
+                    status.innerText = "正在聆聽... (請說英文)";
+                    status.style.color = "#ff4b2b";
+                    userTranscript.innerText = "...";
+                    userTranscript.style.color = "#888";
+                };
 
-                setTimeout(() => {
-                    status.innerText = "等待錄音...";
+                // 即時取得並顯示辨識文字
+                recognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+
+                    // 優先顯示最終確定的文字，如果還沒確定就顯示即時的猜測文字
+                    const displayText = finalTranscript || interimTranscript;
+                    if (displayText) {
+                        userTranscript.innerText = displayText;
+                        userTranscript.style.color = finalTranscript ? "#fff" : "#ccc"; // 還在想的時候用淺灰色
+                    }
+                };
+
+                // 處理錯誤 (例如忘記給麥克風權限)
+                recognition.onerror = (event) => {
+                    console.error("Speech recognition error", event.error);
+                    status.innerText = "錄音發生錯誤 (" + event.error + ")";
+                    status.style.color = "red";
+                };
+
+                // 語音結束後的處理
+                recognition.onend = () => {
+                    status.innerText = "錄音結束，處理中...";
                     status.style.color = "#888";
-                    userTranscript.innerText = "Hello, I'd like to discuss the project update with you.";
-                }, 2000);
+
+                    // 等待一下後恢復狀態
+                    setTimeout(() => {
+                        status.innerText = "等待錄音... (再次點擊發言)";
+                    }, 1000);
+                };
+
+                // 開始收音 (使用 try catch 避免重複點擊造成的報錯)
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.log("語音辨識已經在執行中");
+                }
             });
         });
     </script>
