@@ -366,15 +366,15 @@
                 <button id="leave-btn" class="secondary-btn">⬅ 離開</button>
                 <div class="avatar large">👨‍💼</div>
                 <h3 style="margin: 5px 0 0 0; color: var(--primary);">Manager</h3>
-                <div class="transcript-box ai-transcript">
-                    Hello! 根據您設定的背景，我們現在可以開始練習了。請點擊下方的麥克風開始說話。
+                <div class="transcript-box ai-transcript" style="color: #888;">
+                    準備連線中...
                 </div>
             </div>
 
             <!-- 下半部：使用者 (自己) -->
             <div class="split-half user-half">
                 <div class="transcript-box user-transcript">
-                    (你說的話會顯示在這裡...)
+                    (輪到你時，說的話會顯示在這裡...)
                 </div>
                 <div class="recording-controls">
                     <button id="mic-btn" class="mic-button">🎙️</button>
@@ -449,6 +449,27 @@
             document.getElementById('finish-btn').addEventListener('click', () => {
                 questionnaireScreen.classList.remove('active');
                 learningScreen.classList.add('active');
+
+                // === 讓 AI 先講話的動態效果 ===
+                const aiTranscript = document.querySelector('.ai-transcript');
+                const userTranscript = document.querySelector('.user-transcript');
+                const statusText = document.getElementById('status-text');
+
+                // 重置文字
+                userTranscript.innerText = "(輪到你時，說的話會顯示在這裡...)";
+                userTranscript.style.color = "#888";
+                statusText.innerText = "對方正在說話...";
+
+                // 模擬 AI 思考/打字中
+                aiTranscript.innerText = "Manager is typing...";
+                aiTranscript.style.color = "#888";
+
+                // 1.5 秒後 AI 正式開口
+                setTimeout(() => {
+                    aiTranscript.innerText = "Hello! Glad to see you here. Are you ready to start our conversation practice?";
+                    aiTranscript.style.color = "#fff";
+                    statusText.innerText = "換你了，請點擊麥克風說話";
+                }, 1500);
             });
 
             // 5. 離開 -> 回到首頁
