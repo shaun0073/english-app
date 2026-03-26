@@ -420,12 +420,15 @@
             // === 呼叫 Gemini AI API 取得回覆 ===
             async function getAIResponse(userMessage) {
 
-                // ⚠️【重要提醒】⚠️
-                // 為了在右側 Canvas 預覽能順利運作，這裡必須保持空字串 const apiKey = "";
-                // 當你要上傳到 GitHub Pages 時，請刪除下面這行空字串，並替換為註解的那行！
-                // const apiKey = document.getElementById('api-key-input').value.trim();
-                const apiKey = "";
+                // 抓取輸入框的 API Key
+                let apiKey = document.getElementById('api-key-input').value.trim();
 
+                // (為了讓你在右側 Canvas 預覽能免填順利運作的機制，若上傳 GitHub 則會乖乖抓輸入框)
+                if (apiKey === "123" || apiKey === "test") {
+                    apiKey = "";
+                }
+
+                // 使用 gemini-2.5-flash-preview (如果上傳至 GitHub，建議改成 gemini-1.5-flash)
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
                 // 取得使用者設定的背景
@@ -433,8 +436,8 @@
                 const level = document.querySelector('#step-2 .option-card.selected').innerText.replace(/.* /, '');
                 const scenario = document.querySelector('#step-3 .option-card.selected').innerText.replace(/.* /, '');
 
-                // 設定 AI 的人格與限制
-                const systemPrompt = `You are a helpful English conversation practice partner playing the role of a Manager. The user is a ${role}, their English level is ${level}, and the scenario is ${scenario}. Respond naturally and concisely to the user's prompt in English. Keep it under 2 short sentences.`;
+                // 🚀 設定 AI 的人格與限制 (加入了強制反問的死命令)
+                const systemPrompt = `You are a helpful English conversation practice partner playing the role of a Manager. The user is a ${role}, their English level is ${level}, and the scenario is ${scenario}. Respond naturally and concisely to the user's prompt in English. Keep it under 2 short sentences. IMPORTANT RULE: You MUST always end your response with a follow-up question to keep the conversation going!`;
 
                 const payload = {
                     contents: [{ parts: [{ text: userMessage }] }],
@@ -448,13 +451,21 @@
                         body: JSON.stringify(payload)
                     });
                     const data = await response.json();
+
+                    // 🚀 抓取 API 錯誤 (例如 Key 填錯或無效)
+                    if (data.error) {
+                        console.error("API Error:", data.error);
+                        return "⚠️ API 發生錯誤，請重新整理頁面並檢查您的 API Key 是否正確。";
+                    }
+
                     if (data.candidates && data.candidates[0]) {
                         return data.candidates[0].content.parts[0].text;
                     }
-                    return "I see. Let's continue our practice.";
+
+                    return "I see. Let's continue our practice. What do you think about it?";
                 } catch (error) {
-                    console.error(error);
-                    return "Sorry, I missed that. Could you say it again?";
+                    console.error("Fetch Error:", error);
+                    return "⚠️ 網路連線失敗，請檢查您的網路設定或 API Key。";
                 }
             }
 
@@ -645,11 +656,18 @@
                     const aiResponseText = await getAIResponse(currentRecognizedText);
 
                     aiTranscript.innerText = aiResponseText;
-                    aiTranscript.style.color = "#fff";
+
+                    // 🚀 若有錯誤文字則標紅
+                    if (aiResponseText.includes("⚠️")) {
+                        aiTranscript.style.color = "#ff4b2b";
+                    } else {
+                        aiTranscript.style.color = "#fff";
+                    }
+
                     status.innerText = "換你了，請點擊麥克風說話";
 
-                    // 唸出 AI 的回覆
-                    if ('speechSynthesis' in window) {
+                    // 🚀 唸出 AI 的回覆 (無錯誤才發音)
+                    if ('speechSynthesis' in window && !aiResponseText.includes("⚠️")) {
                         const utterance = new SpeechSynthesisUtterance(aiResponseText);
                         utterance.lang = 'en-US';
                         utterance.rate = 0.9;
