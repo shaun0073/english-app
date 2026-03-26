@@ -93,8 +93,9 @@
             font-size: 2.2rem;
             font-weight: 800;
             background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
-            background-clip: text;
             -webkit-background-clip: text;
+            background-clip: text;
+            /* 解決 VS Code 提示的相容性警告 */
             -webkit-text-fill-color: transparent;
             text-align: center;
             margin: 20px 0;
@@ -423,16 +424,16 @@
                 // 抓取輸入框的 API Key
                 const apiKey = document.getElementById('api-key-input').value.trim();
 
-                // 使用穩定的 gemini-1.5-flash 模型 (適合 GitHub Pages 部署)
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                // 🚀 關鍵修復：改用 gemini-1.5-flash-latest 解決 not found 的報錯問題
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
 
                 // 取得使用者設定的背景
                 const role = document.querySelector('#step-1 .option-card.selected').innerText.replace(/.* /, '');
                 const level = document.querySelector('#step-2 .option-card.selected').innerText.replace(/.* /, '');
                 const scenario = document.querySelector('#step-3 .option-card.selected').innerText.replace(/.* /, '');
 
-                // 🚀 設定 AI 的人格與限制 (加入了強制反問的死命令)
-                const systemPrompt = `You are a friendly English conversation practice partner playing the role of a Manager. The user is a ${role}, their English level is ${level}, and the scenario is ${scenario}. Respond naturally to the user in English. Keep it under 2 short sentences. IMPORTANT RULE: You MUST always end your response with a follow-up question to keep the conversation going!`;
+                // 🚀 設定 AI 的人格與限制 (強制要求 AI 必須反問使用者)
+                const systemPrompt = `You are a helpful English conversation practice partner playing the role of a Manager. The user is a ${role}, their English level is ${level}, and the scenario is ${scenario}. Respond naturally and concisely to the user's prompt in English. Keep it under 2 short sentences. IMPORTANT RULE: You MUST always end your response with a follow-up question to keep the conversation going!`;
 
                 const payload = {
                     contents: [{ role: "user", parts: [{ text: userMessage }] }],
@@ -446,22 +447,23 @@
                         body: JSON.stringify(payload)
                     });
 
-                    // 🚀 抓取 API 錯誤 (例如 Key 填錯或無效)
+                    // 抓取 API 錯誤 (例如 Key 填錯或無效)
                     if (!response.ok) {
                         const errorData = await response.json();
-                        console.error("API 錯誤詳情:", errorData);
-                        return `⚠️ 錯誤: ${errorData.error?.message || response.statusText}`;
+                        console.error("API Error Details:", errorData);
+                        return `⚠️ API 錯誤: ${errorData.error?.message || response.statusText}`;
                     }
 
                     const data = await response.json();
+
                     if (data.candidates && data.candidates[0]) {
                         return data.candidates[0].content.parts[0].text;
                     }
 
-                    return "I see. Let's continue our practice. What do you think about it?";
+                    return "I see. Could you elaborate more on that?";
                 } catch (error) {
                     console.error("Fetch Error:", error);
-                    return `⚠️ 網路連線失敗: ${error.message}`;
+                    return `⚠️ 網路連線失敗，請檢查您的網路設定或 API Key。`;
                 }
             }
 
@@ -528,6 +530,7 @@
 
             // 4. Step 3 (完成) -> 學習對話頁
             document.getElementById('finish-btn').addEventListener('click', () => {
+
                 // 🚀 解鎖瀏覽器語音限制
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
@@ -632,6 +635,7 @@
 
                 // 錄音結束後，把文字送給 AI
                 recognition.onend = async () => {
+
                     if (!currentRecognizedText.trim()) {
                         status.innerText = "錄音結束，未偵測到聲音";
                         status.style.color = "#888";
@@ -671,6 +675,7 @@
                     }
                 };
 
+                // 啟動錄音
                 try {
                     recognition.start();
                 } catch (e) {
