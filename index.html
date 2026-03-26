@@ -298,9 +298,10 @@
             <p class="subtitle">為您量身打造的 AI 英文口說練習</p>
 
             <div style="margin-top: 20px;">
-                <input type="password" id="api-key-input" class="settings-input" placeholder="填入 Groq API Key (可選)">
+                <!-- 在 Canvas 環境中會自動帶入 API Key，使用者可以不用輸入 -->
+                <input type="password" id="api-key-input" class="settings-input" placeholder="系統已自動連線至 AI (無需填寫)">
                 <p style="font-size: 0.85rem; color: #666; margin-top: 10px; text-align: center;">
-                    輸入 API Key 以獲得無延遲對話體驗
+                    提供即時語音辨識與自然對話體驗
                 </p>
             </div>
 
@@ -401,12 +402,48 @@
             // 初始化語音辨識功能 (Web Speech API)
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             let recognition = null;
+            let currentRecognizedText = "";
 
             if (SpeechRecognition) {
                 recognition = new SpeechRecognition();
                 recognition.continuous = false; // 講完一段就自動停止
                 recognition.interimResults = true; // 即時顯示辨識結果
                 recognition.lang = 'en-US'; // 練習英文所以設定英文
+            }
+
+            // === 呼叫 Gemini AI API 取得回覆 ===
+            async function getAIResponse(userMessage) {
+                const apiKey = ""; // 在此環境中會自動取得 Key
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+                // 取得使用者設定的背景
+                const role = document.querySelector('#step-1 .option-card.selected').innerText.replace(/.* /, '');
+                const level = document.querySelector('#step-2 .option-card.selected').innerText.replace(/.* /, '');
+                const scenario = document.querySelector('#step-3 .option-card.selected').innerText.replace(/.* /, '');
+
+                // 設定 AI 的人格與限制
+                const systemPrompt = `You are a helpful English conversation practice partner playing the role of a Manager. The user is a ${role}, their English level is ${level}, and the scenario is ${scenario}. Respond naturally and concisely to the user's prompt in English. Keep it under 2 short sentences.`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userMessage }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                };
+
+                try {
+                    const response = await fetch(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await response.json();
+                    if (data.candidates && data.candidates[0]) {
+                        return data.candidates[0].content.parts[0].text;
+                    }
+                    return "I see. Let's continue our practice.";
+                } catch (error) {
+                    console.error(error);
+                    return "Sorry, I missed that. Could you say it again?";
+                }
             }
 
             // --- 點擊選項卡片的效果 ---
@@ -458,7 +495,7 @@
 
             // 4. Step 3 (完成) -> 學習對話頁
             document.getElementById('finish-btn').addEventListener('click', () => {
-                // 🚀 解鎖瀏覽器語音限制：在點擊的瞬間發出一個無聲的音，取得手機的發聲權限
+                // 🚀 解鎖瀏覽器語音限制
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                     const unlockSpeech = new SpeechSynthesisUtterance('');
@@ -473,12 +510,10 @@
                 const userTranscript = document.querySelector('.user-transcript');
                 const statusText = document.getElementById('status-text');
 
-                // 重置文字
                 userTranscript.innerText = "(輪到你時，說的話會顯示在這裡...)";
                 userTranscript.style.color = "#888";
                 statusText.innerText = "對方正在說話...";
 
-                // 模擬 AI 思考/打字中
                 aiTranscript.innerText = "Manager is typing...";
                 aiTranscript.style.color = "#888";
 
@@ -489,12 +524,10 @@
                     aiTranscript.style.color = "#fff";
                     statusText.innerText = "換你了，請點擊麥克風說話";
 
-                    // 呼叫 Web Speech API 進行語音合成
                     if ('speechSynthesis' in window) {
                         const utterance = new SpeechSynthesisUtterance(greetingMessage);
-                        utterance.lang = 'en-US'; // 設定語系為英文
-                        utterance.rate = 0.9;     // 稍微放慢語速，感覺更像在對話
-                        utterance.pitch = 1.0;    // 預設音調
+                        utterance.lang = 'en-US';
+                        utterance.rate = 0.9;
                         window.speechSynthesis.speak(utterance);
                     }
                 }, 1500);
@@ -514,31 +547,30 @@
                 }
             });
 
-            // 6. 真實的語音辨識機制
+            // 6. 真實的語音辨識與 AI 回應機制
             document.getElementById('mic-btn').addEventListener('click', () => {
                 const status = document.getElementById('status-text');
                 const userTranscript = document.querySelector('.user-transcript');
 
-                // 如果 AI 還在講話，點擊麥克風可以打斷他
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                 }
 
-                // 檢查瀏覽器是否支援
                 if (!recognition) {
                     alert("您的瀏覽器不支援語音辨識功能，建議使用 Chrome 或 Safari。");
                     return;
                 }
 
-                // 設定辨識過程中的回饋
+                // 開始錄音
                 recognition.onstart = () => {
+                    currentRecognizedText = "";
                     status.innerText = "正在聆聽... (請說英文)";
                     status.style.color = "#ff4b2b";
                     userTranscript.innerText = "...";
                     userTranscript.style.color = "#888";
                 };
 
-                // 即時取得並顯示辨識文字
+                // 即時顯示語音轉文字
                 recognition.onresult = (event) => {
                     let interimTranscript = '';
                     let finalTranscript = '';
@@ -551,33 +583,53 @@
                         }
                     }
 
-                    // 優先顯示最終確定的文字，如果還沒確定就顯示即時的猜測文字
-                    const displayText = finalTranscript || interimTranscript;
-                    if (displayText) {
-                        userTranscript.innerText = displayText;
-                        userTranscript.style.color = finalTranscript ? "#fff" : "#ccc"; // 還在想的時候用淺灰色
+                    currentRecognizedText = finalTranscript || interimTranscript;
+                    if (currentRecognizedText) {
+                        userTranscript.innerText = currentRecognizedText;
+                        userTranscript.style.color = finalTranscript ? "#fff" : "#ccc";
                     }
                 };
 
-                // 處理錯誤 (例如忘記給麥克風權限)
                 recognition.onerror = (event) => {
                     console.error("Speech recognition error", event.error);
                     status.innerText = "錄音發生錯誤 (" + event.error + ")";
                     status.style.color = "red";
                 };
 
-                // 語音結束後的處理
-                recognition.onend = () => {
-                    status.innerText = "錄音結束，處理中...";
+                // 錄音結束後，把文字送給 AI
+                recognition.onend = async () => {
+                    if (!currentRecognizedText.trim()) {
+                        status.innerText = "錄音結束，未偵測到聲音";
+                        status.style.color = "#888";
+                        setTimeout(() => {
+                            status.innerText = "等待錄音... (再次點擊發言)";
+                        }, 1500);
+                        return;
+                    }
+
+                    status.innerText = "AI 思考中...";
                     status.style.color = "#888";
 
-                    // 等待一下後恢復狀態
-                    setTimeout(() => {
-                        status.innerText = "等待錄音... (再次點擊發言)";
-                    }, 1000);
+                    const aiTranscript = document.querySelector('.ai-transcript');
+                    aiTranscript.innerText = "Manager is typing...";
+                    aiTranscript.style.color = "#888";
+
+                    // === 等待 AI 回覆 ===
+                    const aiResponseText = await getAIResponse(currentRecognizedText);
+
+                    aiTranscript.innerText = aiResponseText;
+                    aiTranscript.style.color = "#fff";
+                    status.innerText = "換你了，請點擊麥克風說話";
+
+                    // 唸出 AI 的回覆
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance(aiResponseText);
+                        utterance.lang = 'en-US';
+                        utterance.rate = 0.9;
+                        window.speechSynthesis.speak(utterance);
+                    }
                 };
 
-                // 開始收音 (使用 try catch 避免重複點擊造成的報錯)
                 try {
                     recognition.start();
                 } catch (e) {
