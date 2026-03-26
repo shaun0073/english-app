@@ -299,7 +299,8 @@
             <p class="subtitle">為您量身打造的 AI 英文口說練習</p>
 
             <div style="margin-top: 20px;">
-                <input type="password" id="api-key-input" class="settings-input" placeholder="請輸入 Gemini API Key (必填)">
+                <input type="password" id="api-key-input" class="settings-input"
+                    placeholder="請輸入 Google AI Studio 的 API Key">
 
                 <!-- 錯誤提示訊息 (預設隱藏) -->
                 <p id="key-error-msg"
@@ -308,7 +309,9 @@
                 </p>
 
                 <p style="font-size: 0.85rem; color: #666; margin-top: 10px; text-align: center;">
-                    提供即時語音辨識與自然對話體驗
+                    提供即時語音辨識與自然對話體驗<br>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank"
+                        style="color: var(--primary); text-decoration: none;">👉 點此免費獲取 Gemini API Key</a>
                 </p>
             </div>
 
@@ -424,13 +427,15 @@
                 // 抓取輸入框的 API Key
                 const apiKey = document.getElementById('api-key-input').value.trim();
 
+                // 使用最穩定且普及的 gemini-1.5-flash 模型 (更新為 v1 版本提升穩定度)
+                const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
                 // 取得使用者設定的背景
                 const role = document.querySelector('#step-1 .option-card.selected').innerText.replace(/.* /, '');
                 const level = document.querySelector('#step-2 .option-card.selected').innerText.replace(/.* /, '');
                 const scenario = document.querySelector('#step-3 .option-card.selected').innerText.replace(/.* /, '');
 
-                // 🚀 終極防呆機制：把「強迫問問題」的指令直接塞進使用者的對話裡一起送出
-                // 這樣 AI 就絕對無法忽視這個規則！
+                // 🚀 將強制反問的死命令和使用者輸入綁在一起，確保 AI 絕對不會句點你
                 const combinedPrompt = `[System Instructions]
 You are a friendly English conversation practice partner playing the role of a Manager.
 The user's profession is ${role}, English level is ${level}, and the scenario is ${scenario}.
@@ -441,43 +446,40 @@ Rule 2: IMPORTANT! You MUST ALWAYS end your response with a follow-up question t
 ${userMessage}`;
 
                 const payload = {
-                    contents: [{ parts: [{ text: combinedPrompt }] }]
+                    contents: [{ role: "user", parts: [{ text: combinedPrompt }] }]
                 };
 
-                // 🚀 自動備援機制：如果 flash 壞了，自動切換成 pro，保證絕對不會 404 Error
-                const modelsToTry = ['gemini-1.5-flash', 'gemini-pro'];
-                let lastErrorMsg = "";
+                try {
+                    const response = await fetch(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
 
-                for (let model of modelsToTry) {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                    // 🚀 智慧診斷錯誤訊息：如果沒開通權限，白話文告訴使用者怎麼做
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error("API 錯誤詳情:", errorData);
 
-                    try {
-                        const response = await fetch(url, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(payload)
-                        });
-
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            console.warn(`[${model}] 發生錯誤:`, errorData);
-                            lastErrorMsg = errorData.error?.message || response.statusText;
-                            continue; // 失敗了就換下一個模型試試看
+                        // 針對 "not found" 錯誤給出具體解決方案
+                        if (errorData.error?.message?.includes("not found")) {
+                            return `⚠️ API Key 無效或未開通權限！請點擊首頁的連結前往「Google AI Studio」重新產生一組金鑰。`;
                         }
 
-                        const data = await response.json();
-
-                        if (data.candidates && data.candidates[0]) {
-                            return data.candidates[0].content.parts[0].text;
-                        }
-                    } catch (error) {
-                        console.error("網路連線失敗:", error);
-                        lastErrorMsg = error.message;
+                        return `⚠️ 發生錯誤: ${errorData.error?.message || response.statusText}`;
                     }
-                }
 
-                // 如果兩個模型都失敗，才會顯示最終的錯誤
-                return `⚠️ API 連線失敗: ${lastErrorMsg}`;
+                    const data = await response.json();
+
+                    if (data.candidates && data.candidates[0]) {
+                        return data.candidates[0].content.parts[0].text;
+                    }
+
+                    return "I see. Could you elaborate more on that?";
+                } catch (error) {
+                    console.error("Fetch Error:", error);
+                    return `⚠️ 網路連線失敗，請檢查您的網路設定或 API Key。`;
+                }
             }
 
             // --- 點擊選項卡片的效果 ---
