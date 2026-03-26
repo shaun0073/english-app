@@ -447,6 +447,13 @@
 
             // 4. Step 3 (完成) -> 學習對話頁
             document.getElementById('finish-btn').addEventListener('click', () => {
+                // 🚀 解鎖瀏覽器語音限制：在點擊的瞬間發出一個無聲的音，取得手機的發聲權限
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const unlockSpeech = new SpeechSynthesisUtterance('');
+                    window.speechSynthesis.speak(unlockSpeech);
+                }
+
                 questionnaireScreen.classList.remove('active');
                 learningScreen.classList.add('active');
 
@@ -473,14 +480,10 @@
 
                     // 呼叫 Web Speech API 進行語音合成
                     if ('speechSynthesis' in window) {
-                        // 確保先停止之前的任何語音
-                        window.speechSynthesis.cancel();
-
                         const utterance = new SpeechSynthesisUtterance(greetingMessage);
                         utterance.lang = 'en-US'; // 設定語系為英文
                         utterance.rate = 0.9;     // 稍微放慢語速，感覺更像在對話
                         utterance.pitch = 1.0;    // 預設音調
-
                         window.speechSynthesis.speak(utterance);
                     }
                 }, 1500);
