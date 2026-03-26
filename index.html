@@ -303,10 +303,13 @@
                     placeholder="請輸入 Google AI Studio 的 API Key">
 
                 <!-- 錯誤提示訊息 (預設隱藏) -->
-                <p id="key-error-msg"
-                    style="color: #ff4b2b; font-size: 0.85rem; text-align: center; margin-top: 10px; display: none;">
-                    ⚠️ 請先輸入 API Key 才能開始！
-                </p>
+                <div id="key-error-msg"
+                    style="background: rgba(255, 75, 43, 0.1); border-left: 4px solid #ff4b2b; padding: 12px; border-radius: 6px; margin-top: 15px; display: none;">
+                    <p style="color: #ff4b2b; font-size: 0.9rem; margin: 0; font-weight: bold;">⚠️ 金鑰驗證失敗</p>
+                    <p id="key-error-details"
+                        style="color: #ccc; font-size: 0.8rem; margin: 5px 0 0 0; line-height: 1.4;">
+                    </p>
+                </div>
 
                 <p style="font-size: 0.85rem; color: #666; margin-top: 10px; text-align: center;">
                     提供即時語音辨識與自然對話體驗<br>
@@ -409,6 +412,8 @@
             const step2 = document.getElementById('step-2');
             const step3 = document.getElementById('step-3');
 
+            const startBtn = document.getElementById('start-btn');
+
             // 初始化語音辨識功能 (Web Speech API)
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             let recognition = null;
@@ -456,16 +461,10 @@ ${userMessage}`;
                         body: JSON.stringify(payload)
                     });
 
-                    // 🚀 智慧診斷錯誤訊息：如果沒開通權限，白話文告訴使用者怎麼做
+                    // 🚀 智慧診斷錯誤訊息
                     if (!response.ok) {
                         const errorData = await response.json();
                         console.error("API 錯誤詳情:", errorData);
-
-                        // 針對 "not found" 錯誤給出具體解決方案
-                        if (errorData.error?.message?.includes("not found")) {
-                            return `⚠️ API Key 無效或未開通權限！請點擊首頁的連結前往「Google AI Studio」重新產生一組金鑰。`;
-                        }
-
                         return `⚠️ 發生錯誤: ${errorData.error?.message || response.statusText}`;
                     }
 
@@ -494,27 +493,69 @@ ${userMessage}`;
 
             // --- 畫面與步驟切換邏輯 ---
 
-            // 1. 首頁 -> 問卷 (Step 1)
-            document.getElementById('start-btn').addEventListener('click', () => {
+            // 1. 首頁 -> 檢查 API Key 權限 (全新防呆機制)
+            startBtn.addEventListener('click', async () => {
 
                 // 檢查是否輸入 API Key
                 const keyInput = document.getElementById('api-key-input').value.trim();
-                const errorMsg = document.getElementById('key-error-msg');
+                const errorBox = document.getElementById('key-error-msg');
+                const errorDetails = document.getElementById('key-error-details');
 
                 if (!keyInput) {
                     // 如果沒有輸入，顯示錯誤文字並中斷執行
-                    errorMsg.style.display = 'block';
+                    errorBox.style.display = 'block';
+                    errorDetails.innerHTML = "欄位不能為空，請輸入您的 API Key。";
                     return;
                 }
 
-                // 有輸入的話，隱藏錯誤提示並繼續
-                errorMsg.style.display = 'none';
+                // 按鈕變成載入狀態
+                startBtn.innerText = "驗證金鑰權限中...";
+                startBtn.disabled = true;
+                errorBox.style.display = 'none';
 
-                introScreen.classList.remove('active');
-                questionnaireScreen.classList.add('active');
-                step1.classList.add('active');
-                step2.classList.remove('active');
-                step3.classList.remove('active');
+                try {
+                    // 去 Google API 查詢這把 Key 是否有效
+                    const checkUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${keyInput}`;
+                    const res = await fetch(checkUrl);
+                    const data = await res.json();
+
+                    if (!res.ok || data.error) {
+                        errorBox.style.display = 'block';
+
+                        // 翻譯常見的錯誤
+                        let friendlyMsg = "此金鑰無效或被限制。";
+                        const sysMsg = data.error?.message || "未知錯誤";
+
+                        if (sysMsg.includes("API key not valid")) {
+                            friendlyMsg = "金鑰格式錯誤或不存在。(請檢查是否有複製到空白鍵，或是否拿到已刪除的金鑰)";
+                        } else if (sysMsg.includes("not found") || sysMsg.includes("permission")) {
+                            friendlyMsg = "您的帳號似乎沒有 AI 模型存取權限！<br><br>👉 <b>建議：請換一個「個人 Gmail 帳號」重新登入 Google AI Studio 申請一把新的 Key！</b>";
+                        }
+
+                        errorDetails.innerHTML = `${friendlyMsg}<br><br><span style="font-size:0.7rem;">(系統代碼: ${sysMsg})</span>`;
+                        startBtn.innerText = "開始制定學習計劃";
+                        startBtn.disabled = false;
+                        return;
+                    }
+
+                    // 驗證成功，隱藏錯誤提示並繼續
+                    errorBox.style.display = 'none';
+                    introScreen.classList.remove('active');
+                    questionnaireScreen.classList.add('active');
+                    step1.classList.add('active');
+                    step2.classList.remove('active');
+                    step3.classList.remove('active');
+
+                    // 恢復按鈕狀態
+                    startBtn.innerText = "開始制定學習計劃";
+                    startBtn.disabled = false;
+
+                } catch (error) {
+                    errorBox.style.display = 'block';
+                    errorDetails.innerHTML = "網路錯誤無法驗證，請檢查連線。";
+                    startBtn.innerText = "開始制定學習計劃";
+                    startBtn.disabled = false;
+                }
             });
 
             // 2. Step 1 -> Step 2
@@ -588,6 +629,9 @@ ${userMessage}`;
             document.getElementById('leave-btn').addEventListener('click', () => {
                 learningScreen.classList.remove('active');
                 introScreen.classList.add('active');
+
+                // 離開時清空 Key 的欄位，確保下次不會用到舊的
+                document.getElementById('api-key-input').value = "";
 
                 // 離開時停止講話與聆聽
                 if ('speechSynthesis' in window) {
