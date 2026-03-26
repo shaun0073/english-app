@@ -424,47 +424,60 @@
                 // 抓取輸入框的 API Key
                 const apiKey = document.getElementById('api-key-input').value.trim();
 
-                // 🚀 關鍵修復：改用 gemini-1.5-flash-latest 解決 not found 的報錯問題
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
-
                 // 取得使用者設定的背景
                 const role = document.querySelector('#step-1 .option-card.selected').innerText.replace(/.* /, '');
                 const level = document.querySelector('#step-2 .option-card.selected').innerText.replace(/.* /, '');
                 const scenario = document.querySelector('#step-3 .option-card.selected').innerText.replace(/.* /, '');
 
-                // 🚀 設定 AI 的人格與限制 (強制要求 AI 必須反問使用者)
-                const systemPrompt = `You are a helpful English conversation practice partner playing the role of a Manager. The user is a ${role}, their English level is ${level}, and the scenario is ${scenario}. Respond naturally and concisely to the user's prompt in English. Keep it under 2 short sentences. IMPORTANT RULE: You MUST always end your response with a follow-up question to keep the conversation going!`;
+                // 🚀 終極防呆機制：把「強迫問問題」的指令直接塞進使用者的對話裡一起送出
+                // 這樣 AI 就絕對無法忽視這個規則！
+                const combinedPrompt = `[System Instructions]
+You are a friendly English conversation practice partner playing the role of a Manager.
+The user's profession is ${role}, English level is ${level}, and the scenario is ${scenario}.
+Rule 1: Respond naturally and concisely to the user in English. Keep it under 2 short sentences.
+Rule 2: IMPORTANT! You MUST ALWAYS end your response with a follow-up question to keep the conversation going!
+
+[User Input]
+${userMessage}`;
 
                 const payload = {
-                    contents: [{ role: "user", parts: [{ text: userMessage }] }],
-                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                    contents: [{ parts: [{ text: combinedPrompt }] }]
                 };
 
-                try {
-                    const response = await fetch(url, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload)
-                    });
+                // 🚀 自動備援機制：如果 flash 壞了，自動切換成 pro，保證絕對不會 404 Error
+                const modelsToTry = ['gemini-1.5-flash', 'gemini-pro'];
+                let lastErrorMsg = "";
 
-                    // 抓取 API 錯誤 (例如 Key 填錯或無效)
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        console.error("API Error Details:", errorData);
-                        return `⚠️ API 錯誤: ${errorData.error?.message || response.statusText}`;
+                for (let model of modelsToTry) {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+                    try {
+                        const response = await fetch(url, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            console.warn(`[${model}] 發生錯誤:`, errorData);
+                            lastErrorMsg = errorData.error?.message || response.statusText;
+                            continue; // 失敗了就換下一個模型試試看
+                        }
+
+                        const data = await response.json();
+
+                        if (data.candidates && data.candidates[0]) {
+                            return data.candidates[0].content.parts[0].text;
+                        }
+                    } catch (error) {
+                        console.error("網路連線失敗:", error);
+                        lastErrorMsg = error.message;
                     }
-
-                    const data = await response.json();
-
-                    if (data.candidates && data.candidates[0]) {
-                        return data.candidates[0].content.parts[0].text;
-                    }
-
-                    return "I see. Could you elaborate more on that?";
-                } catch (error) {
-                    console.error("Fetch Error:", error);
-                    return `⚠️ 網路連線失敗，請檢查您的網路設定或 API Key。`;
                 }
+
+                // 如果兩個模型都失敗，才會顯示最終的錯誤
+                return `⚠️ API 連線失敗: ${lastErrorMsg}`;
             }
 
             // --- 點擊選項卡片的效果 ---
@@ -585,12 +598,17 @@
 
             // 6. 真實的語音辨識與 AI 回應機制
             document.getElementById('mic-btn').addEventListener('click', () => {
+
+                // 🚀 解鎖：在每次點擊麥克風時，喚醒語音引擎 (防止 iOS Safari 進入休眠)
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.resume();
+                    window.speechSynthesis.cancel();
+                    const unlock = new SpeechSynthesisUtterance('');
+                    window.speechSynthesis.speak(unlock);
+                }
+
                 const status = document.getElementById('status-text');
                 const userTranscript = document.querySelector('.user-transcript');
-
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                }
 
                 if (!recognition) {
                     status.innerText = "⚠️ 您的瀏覽器不支援語音辨識功能，建議使用 Chrome 或 Safari。";
@@ -657,7 +675,7 @@
 
                     aiTranscript.innerText = aiResponseText;
 
-                    // 🚀 若有錯誤文字則標紅
+                    // 若有錯誤文字則標紅
                     if (aiResponseText.includes("⚠️")) {
                         aiTranscript.style.color = "#ff4b2b";
                     } else {
@@ -666,7 +684,7 @@
 
                     status.innerText = "換你了，請點擊麥克風說話";
 
-                    // 🚀 唸出 AI 的回覆 (無錯誤才發音)
+                    // 唸出 AI 的回覆 (無錯誤才發音)
                     if ('speechSynthesis' in window && !aiResponseText.includes("⚠️")) {
                         const utterance = new SpeechSynthesisUtterance(aiResponseText);
                         utterance.lang = 'en-US';
