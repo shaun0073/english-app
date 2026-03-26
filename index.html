@@ -303,7 +303,7 @@
                 <!-- 錯誤提示訊息 (預設隱藏) -->
                 <p id="key-error-msg"
                     style="color: #ff4b2b; font-size: 0.85rem; text-align: center; margin-top: 10px; display: none;">
-                    ⚠️ 請先輸入 API Key 才能開始！<br>(若在此預覽測試，隨便打幾個字即可)
+                    ⚠️ 請先輸入 API Key 才能開始！
                 </p>
 
                 <p style="font-size: 0.85rem; color: #666; margin-top: 10px; text-align: center;">
@@ -421,15 +421,10 @@
             async function getAIResponse(userMessage) {
 
                 // 抓取輸入框的 API Key
-                let apiKey = document.getElementById('api-key-input').value.trim();
+                const apiKey = document.getElementById('api-key-input').value.trim();
 
-                // (為了讓你在右側 Canvas 預覽能免填順利運作的機制，若上傳 GitHub 則會乖乖抓輸入框)
-                if (apiKey === "123" || apiKey === "test") {
-                    apiKey = "";
-                }
-
-                // 使用 gemini-2.5-flash-preview (如果上傳至 GitHub，建議改成 gemini-1.5-flash)
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                // 使用穩定的 gemini-1.5-flash 模型 (適合 GitHub Pages 部署)
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
                 // 取得使用者設定的背景
                 const role = document.querySelector('#step-1 .option-card.selected').innerText.replace(/.* /, '');
@@ -437,10 +432,10 @@
                 const scenario = document.querySelector('#step-3 .option-card.selected').innerText.replace(/.* /, '');
 
                 // 🚀 設定 AI 的人格與限制 (加入了強制反問的死命令)
-                const systemPrompt = `You are a helpful English conversation practice partner playing the role of a Manager. The user is a ${role}, their English level is ${level}, and the scenario is ${scenario}. Respond naturally and concisely to the user's prompt in English. Keep it under 2 short sentences. IMPORTANT RULE: You MUST always end your response with a follow-up question to keep the conversation going!`;
+                const systemPrompt = `You are a friendly English conversation practice partner playing the role of a Manager. The user is a ${role}, their English level is ${level}, and the scenario is ${scenario}. Respond naturally to the user in English. Keep it under 2 short sentences. IMPORTANT RULE: You MUST always end your response with a follow-up question to keep the conversation going!`;
 
                 const payload = {
-                    contents: [{ parts: [{ text: userMessage }] }],
+                    contents: [{ role: "user", parts: [{ text: userMessage }] }],
                     systemInstruction: { parts: [{ text: systemPrompt }] }
                 };
 
@@ -450,14 +445,15 @@
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(payload)
                     });
-                    const data = await response.json();
 
                     // 🚀 抓取 API 錯誤 (例如 Key 填錯或無效)
-                    if (data.error) {
-                        console.error("API Error:", data.error);
-                        return "⚠️ API 發生錯誤，請重新整理頁面並檢查您的 API Key 是否正確。";
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error("API 錯誤詳情:", errorData);
+                        return `⚠️ 錯誤: ${errorData.error?.message || response.statusText}`;
                     }
 
+                    const data = await response.json();
                     if (data.candidates && data.candidates[0]) {
                         return data.candidates[0].content.parts[0].text;
                     }
@@ -465,7 +461,7 @@
                     return "I see. Let's continue our practice. What do you think about it?";
                 } catch (error) {
                     console.error("Fetch Error:", error);
-                    return "⚠️ 網路連線失敗，請檢查您的網路設定或 API Key。";
+                    return `⚠️ 網路連線失敗: ${error.message}`;
                 }
             }
 
