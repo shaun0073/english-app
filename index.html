@@ -3,21 +3,33 @@
 
 <head>
     <meta charset="UTF-8">
+    <!-- 設定手機版面的縮放比例，確保在手機上不會變形 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>English AI Tutor</title>
+    <!-- 載入 Google 字體 Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
     <style>
-        /* === 1. 核心版面設定 === */
+        /* =========================================
+           1. 核心版面與顏色變數設定
+           ========================================= */
         :root {
+            /* 主題紫色 */
             --primary: #8a2be2;
             --primary-rgb: 138, 43, 226;
+
+            /* 背景深色 */
             --bg-dark: #121212;
+
+            /* 卡片深灰背景 */
             --card-bg: #1e1e1e;
+
+            /* 文字顏色 */
             --text-main: #ffffff;
             --text-muted: #a0a0a0;
         }
 
+        /* 網頁基礎設定：滿版、防止亂滑動 */
         body,
         html {
             margin: 0 !important;
@@ -31,6 +43,7 @@
             /* 防止整個畫面亂滑 */
         }
 
+        /* 主容器：限制最大寬度，讓它在電腦上看也像手機 App */
         #app {
             position: relative;
             max-width: 500px;
@@ -42,7 +55,11 @@
             flex-direction: column;
         }
 
-        /* === 2. 解決重疊的核心邏輯 === */
+        /* =========================================
+           2. 螢幕與步驟切換邏輯 (解決重疊問題)
+           ========================================= */
+
+        /* 所有的畫面預設都是隱藏的 */
         .screen {
             display: none !important;
             position: absolute;
@@ -56,26 +73,32 @@
             background-color: var(--bg-dark);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            /* 讓 iOS 滾動更順暢 */
         }
 
+        /* 只有加上 .active 的畫面才會顯示 */
         .screen.active {
             display: flex !important;
             z-index: 10;
         }
 
+        /* 問卷的每一個步驟預設隱藏 */
         .step {
             display: none !important;
             flex-direction: column;
             gap: 15px;
             width: 100%;
             flex: 1;
+            /* 加入淡入動畫 */
             animation: fadeIn 0.4s ease;
         }
 
+        /* 啟動的步驟才會顯示 */
         .step.active {
             display: flex !important;
         }
 
+        /* 畫面切換時的淡入動畫效果 */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -88,7 +111,11 @@
             }
         }
 
-        /* === 3. 介面美化 === */
+        /* =========================================
+           3. 介面美化與 UI 元件
+           ========================================= */
+
+        /* 漸層標題文字 */
         .gradient-text {
             font-size: 2.2rem;
             font-weight: 800;
@@ -101,6 +128,7 @@
             margin: 20px 0;
         }
 
+        /* 副標題說明文字 */
         .subtitle {
             color: var(--text-muted);
             text-align: center;
@@ -108,7 +136,7 @@
             line-height: 1.4;
         }
 
-        /* 選項卡片 */
+        /* 選項卡片容器 (格狀排列) */
         .options-grid {
             display: flex;
             flex-direction: column;
@@ -116,6 +144,7 @@
             width: 100%;
         }
 
+        /* 單個選項卡片的外觀 */
         .option-card {
             background: var(--card-bg);
             padding: 18px;
@@ -123,22 +152,25 @@
             border: 1px solid #333;
             cursor: pointer;
             transition: 0.2s;
+            /* 讓懸停效果更平滑 */
             font-size: 1.1rem;
             display: flex;
             align-items: center;
         }
 
+        /* 滑鼠移過去的特效 */
         .option-card:hover {
             border-color: #555;
         }
 
+        /* 卡片被選中時的特效 (發光與變色) */
         .option-card.selected {
             border-color: var(--primary);
             background: rgba(var(--primary-rgb), 0.15);
             box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.2);
         }
 
-        /* 按鈕 */
+        /* 主要按鈕 (紫色背景) */
         .primary-btn {
             background: var(--primary);
             color: white;
@@ -154,10 +186,12 @@
             transition: transform 0.1s;
         }
 
+        /* 按下按鈕時的縮放回饋 */
         .primary-btn:active {
             transform: scale(0.95);
         }
 
+        /* 按鈕被禁用時的狀態 (例如驗證中) */
         .primary-btn:disabled {
             background: #555;
             cursor: not-allowed;
@@ -165,6 +199,7 @@
             transform: none;
         }
 
+        /* 次要按鈕 (透明背景、灰色邊框) */
         .secondary-btn {
             background: transparent;
             color: #888;
@@ -177,6 +212,7 @@
             align-self: center;
         }
 
+        /* 輸入框外觀 (API Key) */
         .settings-input {
             width: 100%;
             background: var(--card-bg);
@@ -188,14 +224,18 @@
             font-size: 1rem;
         }
 
-        /* === 4. 學習對話頁面：一半一半版面 === */
+        /* =========================================
+           4. 學習對話頁面：一半一半版面
+           ========================================= */
+
+        /* 對話頁面的主容器 */
         #learning-screen {
             padding: 0 !important;
-            /* 滿版顯示 */
             overflow: hidden;
             /* 對話頁面不需要整頁滾動 */
         }
 
+        /* 將畫面切成上下兩半 */
         .split-half {
             flex: 1;
             /* 各佔 50% 高度 */
@@ -209,18 +249,20 @@
             box-sizing: border-box;
         }
 
-        /* 上半部：AI 經理 */
+        /* 上半部：AI 經理的背景 (帶有漸層) */
         .ai-half {
             background: linear-gradient(180deg, #1f1c2c 0%, var(--bg-dark) 100%);
         }
 
-        /* 下半部：使用者 */
+        /* 下半部：使用者的背景 (純深灰) */
         .user-half {
             background: var(--card-bg);
             border-top: 2px solid var(--primary);
+            /* 中間的紫色分隔線 */
             box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.3);
         }
 
+        /* AI 的大頭貼 */
         .avatar.large {
             width: 80px;
             height: 80px;
@@ -234,6 +276,7 @@
             margin-bottom: 10px;
         }
 
+        /* 對話字幕的黑框 */
         .transcript-box {
             width: 100%;
             max-width: 400px;
@@ -250,18 +293,22 @@
             margin-top: 15px;
             box-sizing: border-box;
             overflow-y: auto;
+            /* 如果文字太多可以滾動 */
         }
 
+        /* AI 字幕左邊的紫色線條 */
         .ai-transcript {
             border-left: 4px solid var(--primary);
             color: #fff;
         }
 
+        /* 使用者字幕左邊的橘色線條 */
         .user-transcript {
             border-left: 4px solid #ff4b2b;
             color: #888;
         }
 
+        /* 麥克風區塊容器 */
         .recording-controls {
             display: flex;
             flex-direction: column;
@@ -269,6 +316,7 @@
             margin-top: 20px;
         }
 
+        /* 麥克風按鈕 (橘紅色) */
         .mic-button {
             width: 80px;
             height: 80px;
@@ -284,10 +332,12 @@
             align-items: center;
         }
 
+        /* 麥克風按下的特效 */
         .mic-button:active {
             transform: scale(0.9);
         }
 
+        /* 左上角的離開按鈕 */
         #leave-btn {
             position: absolute;
             top: 20px;
@@ -300,17 +350,20 @@
 </head>
 
 <body>
+    <!-- 整個應用的主容器 -->
     <div id="app">
+
         <!-- ==================== 1. 首頁 ==================== -->
         <div id="intro-screen" class="screen active">
             <h1 class="gradient-text">Speak with Confidence</h1>
             <p class="subtitle">為您量身打造的 AI 英文口說練習</p>
 
             <div style="margin-top: 20px;">
+                <!-- API Key 輸入框 -->
                 <input type="password" id="api-key-input" class="settings-input"
                     placeholder="請輸入 Google AI Studio 的 API Key">
 
-                <!-- 錯誤提示訊息 (預設隱藏) -->
+                <!-- 錯誤提示訊息 (預設是隱藏的，有錯才顯示) -->
                 <div id="key-error-msg"
                     style="background: rgba(255, 75, 43, 0.1); border-left: 4px solid #ff4b2b; padding: 12px; border-radius: 6px; margin-top: 15px; display: none;">
                     <p style="color: #ff4b2b; font-size: 0.9rem; margin: 0; font-weight: bold;">⚠️ 發生錯誤</p>
@@ -319,6 +372,7 @@
                     </p>
                 </div>
 
+                <!-- 說明文字與申請連結 -->
                 <p style="font-size: 0.85rem; color: #666; margin-top: 10px; text-align: center;">
                     提供即時語音辨識與自然對話體驗<br>
                     <a href="https://aistudio.google.com/app/apikey" target="_blank"
@@ -326,13 +380,14 @@
                 </p>
             </div>
 
+            <!-- 首頁開始按鈕 -->
             <button id="start-btn" class="primary-btn" style="margin-top: auto; margin-bottom: 20px;">開始制定學習計劃</button>
         </div>
 
         <!-- ==================== 2. 三段式問卷頁 ==================== -->
         <div id="questionnaire-screen" class="screen">
 
-            <!-- 關卡 1: 職業 -->
+            <!-- 關卡 1: 職業選擇 -->
             <div id="step-1" class="step active">
                 <h2 style="text-align: center; margin-bottom: 5px;">你的職業是？</h2>
                 <p class="subtitle">幫助我們推薦最適合的單字</p>
@@ -347,7 +402,7 @@
                     (1/3)</button>
             </div>
 
-            <!-- 關卡 2: 程度 -->
+            <!-- 關卡 2: 程度選擇 -->
             <div id="step-2" class="step">
                 <h2 style="text-align: center; margin-bottom: 5px;">你的英語程度？</h2>
                 <p class="subtitle">調整 AI 的語速與用詞難度</p>
@@ -362,7 +417,7 @@
                 </div>
             </div>
 
-            <!-- 關卡 3: 場景 -->
+            <!-- 關卡 3: 情境選擇 -->
             <div id="step-3" class="step">
                 <h2 style="text-align: center; margin-bottom: 5px;">你想練習的場景？</h2>
                 <p class="subtitle">選擇您最想精進的情境</p>
@@ -383,21 +438,27 @@
         <!-- ==================== 3. 學習對話頁 (一半一半版面) ==================== -->
         <div id="learning-screen" class="screen">
 
-            <!-- 上半部：AI (經理/對話對象) -->
+            <!-- 上半部：AI 經理/對話對象的畫面 -->
             <div class="split-half ai-half">
                 <button id="leave-btn" class="secondary-btn">⬅ 離開</button>
                 <div class="avatar large">👨‍💼</div>
                 <h3 style="margin: 5px 0 0 0; color: var(--primary);">Manager</h3>
+
+                <!-- 顯示 AI 說的話的地方 -->
                 <div class="transcript-box ai-transcript" style="color: #888;">
                     準備連線中...
                 </div>
             </div>
 
-            <!-- 下半部：使用者 (自己) -->
+            <!-- 下半部：使用者 (自己) 的畫面 -->
             <div class="split-half user-half">
+
+                <!-- 顯示我們自己說的話的地方 -->
                 <div class="transcript-box user-transcript">
                     (輪到你時，說的話會顯示在這裡...)
                 </div>
+
+                <!-- 麥克風與狀態文字區 -->
                 <div class="recording-controls">
                     <button id="mic-btn" class="mic-button">🎙️</button>
                     <p id="status-text" style="color: #888; margin-top: 15px; font-size: 0.9rem;">等待錄音...</p>
@@ -407,49 +468,58 @@
         </div>
     </div>
 
-    <!-- === JavaScript 邏輯 === -->
+    <!-- =========================================
+         JavaScript 核心邏輯區塊
+         ========================================= -->
     <script>
+        // 等待網頁元素全部載入後再執行
         document.addEventListener('DOMContentLoaded', () => {
-            // 抓取各個螢幕
+
+            // 抓取各個主要的螢幕元素
             const introScreen = document.getElementById('intro-screen');
             const questionnaireScreen = document.getElementById('questionnaire-screen');
             const learningScreen = document.getElementById('learning-screen');
 
-            // 抓取問卷步驟
+            // 抓取問卷的各個步驟
             const step1 = document.getElementById('step-1');
             const step2 = document.getElementById('step-2');
             const step3 = document.getElementById('step-3');
 
+            // 抓取首頁的開始按鈕
             const startBtn = document.getElementById('start-btn');
 
-            // 🚀 全域變數：儲存我們自動偵測到的可用模型路徑
+            // 🚀 全域變數：用來儲存我們自動偵測到的「可用 AI 模型路徑」與「API Key」
             let activeModelPath = "";
             let activeApiKey = "";
 
             // 初始化語音辨識功能 (Web Speech API)
+            // 由於各家瀏覽器的實作名稱不同，這裡要同時支援標準版和 webkit 版
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             let recognition = null;
             let currentRecognizedText = "";
 
             if (SpeechRecognition) {
                 recognition = new SpeechRecognition();
-                recognition.continuous = false; // 講完一段就自動停止
-                recognition.interimResults = true; // 即時顯示辨識結果
-                recognition.lang = 'en-US'; // 練習英文所以設定英文
+                recognition.continuous = false; // 講完一段就自動停止錄音
+                recognition.interimResults = true; // 允許即時顯示正在講的辨識結果
+                recognition.lang = 'en-US'; // 這裡是英文口說練習，所以強制設定為美式英文
             }
 
-            // === 呼叫 Gemini AI API 取得回覆 ===
+            // =========================================
+            //  核心功能 1：呼叫 Gemini AI API 取得回覆
+            // =========================================
             async function getAIResponse(userMessage) {
 
-                // 🚀 使用剛剛自動偵測到的模型路徑 (這樣絕對不會再報 Not Found)
+                // 使用剛剛自動偵測到的模型路徑 (這樣絕對不會再報 Not Found 錯誤)
                 const url = `https://generativelanguage.googleapis.com/v1beta/${activeModelPath}:generateContent?key=${activeApiKey}`;
 
-                // 取得使用者設定的背景
+                // 從畫面上抓取使用者剛剛在問卷中選擇的設定
                 const role = document.querySelector('#step-1 .option-card.selected').innerText.replace(/.* /, '');
                 const level = document.querySelector('#step-2 .option-card.selected').innerText.replace(/.* /, '');
                 const scenario = document.querySelector('#step-3 .option-card.selected').innerText.replace(/.* /, '');
 
-                // 🚀 將強制反問的死命令和使用者輸入綁在一起，確保 AI 絕對不會句點你
+                // 🚀 【系統指令與防呆機制】
+                // 將強制反問的死命令和使用者輸入綁在一起，確保 AI 絕對不會用一句話句點你
                 const combinedPrompt = `[System Instructions]
 You are a friendly English conversation practice partner playing the role of a Manager.
 The user's profession is ${role}, English level is ${level}, and the scenario is ${scenario}.
@@ -459,79 +529,96 @@ Rule 2: IMPORTANT! You MUST ALWAYS end your response with a follow-up question t
 [User Input]
 ${userMessage}`;
 
+                // 組合要送給 Google 的資料包格式
                 const payload = {
                     contents: [{ role: "user", parts: [{ text: combinedPrompt }] }]
                 };
 
                 try {
+                    // 發送網路請求給 Google
                     const response = await fetch(url, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(payload)
                     });
 
-                    // 智慧診斷錯誤訊息
+                    // 智慧診斷錯誤訊息：如果回傳狀態不正常
                     if (!response.ok) {
                         const errorData = await response.json();
                         console.error("API 錯誤詳情:", errorData);
                         return `⚠️ 發生錯誤: ${errorData.error?.message || response.statusText}`;
                     }
 
+                    // 成功拿到資料，將其轉換為 JSON
                     const data = await response.json();
 
+                    // 提取 AI 講的文字
                     if (data.candidates && data.candidates[0]) {
                         return data.candidates[0].content.parts[0].text;
                     }
 
+                    // 如果 API 沒回傳文字的防呆措施
                     return "I see. Could you elaborate more on that?";
                 } catch (error) {
+                    // 網路斷線或其他嚴重錯誤
                     console.error("Fetch Error:", error);
                     return `⚠️ 網路連線失敗，請檢查您的網路設定。`;
                 }
             }
 
-            // --- 點擊選項卡片的效果 ---
+            // =========================================
+            //  UI 互動：選項卡片的點擊特效
+            // =========================================
             const optionCards = document.querySelectorAll('.option-card');
             optionCards.forEach(card => {
                 card.addEventListener('click', function () {
+                    // 先把同一個區域裡面的所有卡片取消選中
                     const siblings = this.parentElement.querySelectorAll('.option-card');
                     siblings.forEach(s => s.classList.remove('selected'));
+                    // 然後把目前點擊的這張卡片加上選中效果
                     this.classList.add('selected');
                 });
             });
 
-            // --- 畫面與步驟切換邏輯 ---
+            // =========================================
+            //  畫面切換與流程控制邏輯
+            // =========================================
 
             // 1. 首頁 -> 自動偵測可用模型 (終極防呆機制)
             startBtn.addEventListener('click', async () => {
 
+                // 取得輸入框的值
                 const keyInput = document.getElementById('api-key-input').value.trim();
                 const errorBox = document.getElementById('key-error-msg');
                 const errorDetails = document.getElementById('key-error-details');
 
+                // 檢查是否為空
                 if (!keyInput) {
                     errorBox.style.display = 'block';
                     errorDetails.innerHTML = "請輸入您的 API Key。";
                     return;
                 }
 
-                // 按鈕變成載入狀態
+                // 按鈕變成載入狀態，防止使用者狂按
                 startBtn.innerText = "正在掃描可用 AI 模型...";
                 startBtn.disabled = true;
                 errorBox.style.display = 'none';
 
                 try {
-                    // 🚀 核心大絕招：直接去查這個帳號可以用的所有模型清單
+                    // 🚀 核心大絕招：直接去查這個帳號可以用的「所有模型清單」
+                    // 這招可以完美避開因為帳號權限不同而導致的 not found 錯誤
                     const checkUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${keyInput}`;
                     const res = await fetch(checkUrl);
                     const data = await res.json();
 
+                    // 如果連清單都查不到，代表這把 Key 是無效的或是壞掉的
                     if (!res.ok || data.error) {
                         errorBox.style.display = 'block';
 
                         let friendlyMsg = "此金鑰無效或被限制。";
                         const sysMsg = data.error?.message || "未知錯誤";
 
+                        // 分析具體原因並給出白話文建議
                         if (sysMsg.includes("API key not valid")) {
                             friendlyMsg = "找不到此金鑰！(請檢查前後是否多複製了「空白鍵」，或是拿到了舊的金鑰)";
                         }
@@ -542,13 +629,14 @@ ${userMessage}`;
                         return;
                     }
 
-                    // 從清單中找出支援「文字生成」的 Gemini 模型
+                    // 從 Google 給的清單中，過濾出支援「文字生成 (generateContent)」的 Gemini 模型
                     const validModels = data.models.filter(m =>
                         m.supportedGenerationMethods &&
                         m.supportedGenerationMethods.includes("generateContent") &&
                         m.name.includes("gemini")
                     );
 
+                    // 如果找了一圈發現一個可以用的都沒有，那就是帳號被閹割了
                     if (validModels.length === 0) {
                         errorBox.style.display = 'block';
                         errorDetails.innerHTML = "您的帳號沒有開放文字 AI 模型權限！請更換一個「個人 Gmail」重新申請。";
@@ -557,28 +645,31 @@ ${userMessage}`;
                         return;
                     }
 
-                    // 優先選用 1.5 flash，沒有的話選 1.5 pro，再沒有就隨便選一個可用的
+                    // 選模型策略：優先選用 1.5 flash，沒有的話選 1.5 pro，再沒有就隨便選清單裡的第一個
                     let chosenModel = validModels.find(m => m.name.includes("1.5-flash"));
                     if (!chosenModel) chosenModel = validModels.find(m => m.name.includes("1.5-pro"));
                     if (!chosenModel) chosenModel = validModels[0];
 
-                    // 儲存確定能用的模型名稱 (例如 "models/gemini-1.5-flash")
+                    // 將千辛萬苦找到的正確模型路徑存入全域變數，供後續對話使用
                     activeModelPath = chosenModel.name;
                     activeApiKey = keyInput;
 
-                    // 驗證成功，隱藏錯誤提示並繼續
+                    // 驗證成功，隱藏錯誤提示
                     errorBox.style.display = 'none';
+
+                    // 切換畫面：關閉首頁，開啟問卷頁第一步
                     introScreen.classList.remove('active');
                     questionnaireScreen.classList.add('active');
                     step1.classList.add('active');
                     step2.classList.remove('active');
                     step3.classList.remove('active');
 
-                    // 恢復按鈕狀態
+                    // 恢復按鈕狀態，以便下次點擊
                     startBtn.innerText = "開始制定學習計劃";
                     startBtn.disabled = false;
 
                 } catch (error) {
+                    // 如果網路斷掉會跑到這裡
                     errorBox.style.display = 'block';
                     errorDetails.innerHTML = "網路錯誤無法驗證，請檢查連線。";
                     startBtn.innerText = "開始制定學習計劃";
@@ -586,50 +677,56 @@ ${userMessage}`;
                 }
             });
 
-            // 2. Step 1 -> Step 2
+            // 2. Step 1 (職業) -> Step 2 (程度)
             document.getElementById('next-1-btn').addEventListener('click', () => {
                 step1.classList.remove('active');
                 step2.classList.add('active');
-                questionnaireScreen.scrollTop = 0;
+                questionnaireScreen.scrollTop = 0; // 確保畫面捲到最上面
             });
 
+            // 回上一步
             document.getElementById('back-1-btn').addEventListener('click', () => {
                 step2.classList.remove('active');
                 step1.classList.add('active');
                 questionnaireScreen.scrollTop = 0;
             });
 
-            // 3. Step 2 -> Step 3
+            // 3. Step 2 (程度) -> Step 3 (場景)
             document.getElementById('next-2-btn').addEventListener('click', () => {
                 step2.classList.remove('active');
                 step3.classList.add('active');
                 questionnaireScreen.scrollTop = 0;
             });
 
+            // 回上一步
             document.getElementById('back-2-btn').addEventListener('click', () => {
                 step3.classList.remove('active');
                 step2.classList.add('active');
                 questionnaireScreen.scrollTop = 0;
             });
 
-            // 4. Step 3 (完成) -> 學習對話頁
+            // 4. Step 3 (完成) -> 進入真正的學習對話頁面
             document.getElementById('finish-btn').addEventListener('click', () => {
 
                 // 🚀 解鎖瀏覽器語音限制
+                // 很多手機瀏覽器 (尤其是 Safari) 必須在「使用者點擊按鈕的當下」發出聲音
+                // 否則之後的自動語音會被封鎖。這裡用播放一段空白聲音來破除限制。
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                     const unlockSpeech = new SpeechSynthesisUtterance('');
                     window.speechSynthesis.speak(unlockSpeech);
                 }
 
+                // 切換畫面到學習對話頁
                 questionnaireScreen.classList.remove('active');
                 learningScreen.classList.add('active');
 
-                // === 讓 AI 先講話的動態效果 ===
+                // 抓取文字對話框的 DOM 元素
                 const aiTranscript = document.querySelector('.ai-transcript');
                 const userTranscript = document.querySelector('.user-transcript');
                 const statusText = document.getElementById('status-text');
 
+                // 初始化狀態
                 userTranscript.innerText = "(輪到你時，說的話會顯示在這裡...)";
                 userTranscript.style.color = "#888";
                 statusText.innerText = "對方正在說話...";
@@ -637,40 +734,48 @@ ${userMessage}`;
                 aiTranscript.innerText = "Manager is typing...";
                 aiTranscript.style.color = "#888";
 
-                // 1.5 秒後 AI 正式開口並發聲
+                // 設定 1.5 秒的延遲，讓使用者有「對方正在打字」的真實感
                 setTimeout(() => {
+                    // AI 的開場白
                     const greetingMessage = "Hello! Glad to see you here. Are you ready to start our conversation practice?";
+
+                    // 顯示文字
                     aiTranscript.innerText = greetingMessage;
                     aiTranscript.style.color = "#fff";
                     statusText.innerText = "換你了，請點擊麥克風說話";
 
+                    // 呼叫系統語音引擎唸出開場白
                     if ('speechSynthesis' in window) {
                         const utterance = new SpeechSynthesisUtterance(greetingMessage);
                         utterance.lang = 'en-US';
-                        utterance.rate = 0.9;
+                        utterance.rate = 0.9; // 稍微放慢語速，方便學習
                         window.speechSynthesis.speak(utterance);
                     }
                 }, 1500);
             });
 
-            // 5. 離開 -> 回到首頁
+            // 5. 離開按鈕 -> 回到首頁並中斷所有動作
             document.getElementById('leave-btn').addEventListener('click', () => {
                 learningScreen.classList.remove('active');
                 introScreen.classList.add('active');
 
-                // 離開時停止講話與聆聽
+                // 離開時停止正在唸的文字
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                 }
+
+                // 離開時中斷麥克風錄音
                 if (recognition) {
                     recognition.abort();
                 }
             });
 
-            // 6. 真實的語音辨識與 AI 回應機制
+            // =========================================
+            //  語音辨識與 AI 對答的核心機制
+            // =========================================
             document.getElementById('mic-btn').addEventListener('click', () => {
 
-                // 🚀 解鎖：在每次點擊麥克風時，喚醒語音引擎 (防止 iOS Safari 進入休眠)
+                // 🚀 再次解鎖機制：防止 iOS Safari 因為閒置太久又把語音功能鎖起來
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.resume();
                     window.speechSynthesis.cancel();
@@ -681,26 +786,28 @@ ${userMessage}`;
                 const status = document.getElementById('status-text');
                 const userTranscript = document.querySelector('.user-transcript');
 
+                // 如果使用者的裝置不支援 Web Speech API (例如非 Safari/Chrome 等核心)
                 if (!recognition) {
                     status.innerText = "⚠️ 您的瀏覽器不支援語音辨識功能，建議使用 Chrome 或 Safari。";
                     status.style.color = "#ff4b2b";
                     return;
                 }
 
-                // 開始錄音
+                // 當麥克風成功啟動時的事件
                 recognition.onstart = () => {
-                    currentRecognizedText = "";
+                    currentRecognizedText = ""; // 清空上次說的話
                     status.innerText = "正在聆聽... (請說英文)";
-                    status.style.color = "#ff4b2b";
+                    status.style.color = "#ff4b2b"; // 變成橘紅色提醒正在錄音
                     userTranscript.innerText = "...";
                     userTranscript.style.color = "#888";
                 };
 
-                // 即時顯示語音轉文字
+                // 當正在講話、持續產生辨識結果時的事件
                 recognition.onresult = (event) => {
                     let interimTranscript = '';
                     let finalTranscript = '';
 
+                    // 把所有片段的結果組合起來
                     for (let i = event.resultIndex; i < event.results.length; ++i) {
                         if (event.results[i].isFinal) {
                             finalTranscript += event.results[i][0].transcript;
@@ -709,31 +816,38 @@ ${userMessage}`;
                         }
                     }
 
+                    // 取最終結果，如果還沒確定就先顯示暫時結果
                     currentRecognizedText = finalTranscript || interimTranscript;
                     if (currentRecognizedText) {
                         userTranscript.innerText = currentRecognizedText;
+                        // 如果是最終結果文字變白，暫時結果則是灰色
                         userTranscript.style.color = finalTranscript ? "#fff" : "#ccc";
                     }
                 };
 
+                // 當麥克風發生錯誤時的事件 (例如使用者拒絕授權)
                 recognition.onerror = (event) => {
                     console.error("Speech recognition error", event.error);
                     status.innerText = "錄音發生錯誤 (" + event.error + ")";
                     status.style.color = "red";
                 };
 
-                // 錄音結束後，把文字送給 AI
+                // 當麥克風錄音結束時 (通常是使用者停頓了幾秒鐘)
                 recognition.onend = async () => {
 
+                    // 如果使用者根本沒講話就停了
                     if (!currentRecognizedText.trim()) {
                         status.innerText = "錄音結束，未偵測到聲音";
                         status.style.color = "#888";
+
+                        // 1.5 秒後恢復提示
                         setTimeout(() => {
                             status.innerText = "等待錄音... (再次點擊發言)";
                         }, 1500);
                         return;
                     }
 
+                    // 狀態切換成 AI 思考中
                     status.innerText = "AI 思考中...";
                     status.style.color = "#888";
 
@@ -741,21 +855,23 @@ ${userMessage}`;
                     aiTranscript.innerText = "Manager is typing...";
                     aiTranscript.style.color = "#888";
 
-                    // === 等待 AI 回覆 ===
+                    // === 呼叫 AI API 取得回覆 (最耗時的步驟) ===
                     const aiResponseText = await getAIResponse(currentRecognizedText);
 
+                    // 顯示 AI 的文字回覆
                     aiTranscript.innerText = aiResponseText;
 
-                    // 若有錯誤文字則標紅
+                    // 如果包含警告標誌，代表發生錯誤，文字改標紅色
                     if (aiResponseText.includes("⚠️")) {
                         aiTranscript.style.color = "#ff4b2b";
                     } else {
                         aiTranscript.style.color = "#fff";
                     }
 
+                    // 提示輪到使用者了
                     status.innerText = "換你了，請點擊麥克風說話";
 
-                    // 唸出 AI 的回覆 (無錯誤才發音)
+                    // 如果沒有發生錯誤，就呼叫系統語音把 AI 的回覆唸出來
                     if ('speechSynthesis' in window && !aiResponseText.includes("⚠️")) {
                         const utterance = new SpeechSynthesisUtterance(aiResponseText);
                         utterance.lang = 'en-US';
@@ -764,11 +880,11 @@ ${userMessage}`;
                     }
                 };
 
-                // 啟動錄音
+                // 實際啟動錄音的語法
                 try {
                     recognition.start();
                 } catch (e) {
-                    console.log("語音辨識已經在執行中");
+                    console.log("語音辨識已經在執行中，忽略這次點擊");
                 }
             });
         });
